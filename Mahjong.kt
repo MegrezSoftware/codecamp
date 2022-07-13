@@ -34,7 +34,7 @@ fun whichCardToTing(handCards: List<Mahjong>): List<Mahjong> {
     val results = mutableListOf<Mahjong>()
     outer@
     for (tingCard in Mahjong.values()) {
-        if (worthNotToTing(counts.copyOf(), tingCard.value))
+        if (worthNotToTing(counts, tingCard.value))
             continue
         val tingCounts = counts.copyOf().apply { this[tingCard.value]++ }
         for (index in tingCounts.indices) {
