@@ -72,27 +72,6 @@ class MahjongGame {
             val possible = LinkedList<Match>()
             when {
                 prefix?.isNotEmpty() == true && suffix?.isNotEmpty() == true -> {
-                    val lastOfPrefix = prefix.last()
-                    val firstOfSuffix = suffix.first()
-                    val cellLength = lastOfPrefix.length + firstOfSuffix.length
-                    val cellStart = lastOfPrefix.start
-                    val cellEnd = firstOfSuffix.start + firstOfSuffix.length
-                    if (cellStart in sorted.indices && cellEnd in sorted.indices
-                        && (cellLength == 2 || cellLength == 3)
-                    ) {
-                        val cell =
-                            recordRangeFrom(sorted.subList(cellStart, cellEnd), start = 0)
-                        // merge the last of suffix and the first of prefix may turn into a valid combine.
-                        if (cell !is Match.None && cell.level > firstOfSuffix.level && cell.level > lastOfPrefix.level) {
-                            Logg.debugLn("合并$lastOfPrefix+$firstOfSuffix=$cell")
-                            possible.addAll(prefix)
-                            possible.remove(lastOfPrefix)
-                            possible.add(cell)
-                            suffix.forEachIndexed { index, match ->
-                                if (index != 0) possible.add(match)
-                            }
-                        }
-                    }
                     // If no merge procedure happen between suffix and prefix
                     if (possible.isEmpty()) {
                         possible.addAll(prefix)
@@ -124,7 +103,7 @@ class MahjongGame {
         matchMap: java.util.HashMap<String, LinkedList<Match>>
     ) {
         sorted.forEachIndexed { index, mahjong ->
-            val self = Match.SingleOne(Card(num = mahjong, pos = index))
+            val self = Match.SingleOne(Card(mahjong = mahjong))
             matchMap["$index-$index"] = LinkedList<Match>().apply { offerLast(self) }
         }
         for (start in sorted.indices) {
@@ -135,10 +114,16 @@ class MahjongGame {
                 val replaceCellStart = cursor - lastTopElement.length
                 val myTurn = matchMap.getOrPut("$start-$cursor") { LinkedList<Match>(lastTurn) }
                 if (lastTopElement.length == 3 || replaceCellStart !in sorted.indices) {
-                    myTurn.offerLast(Match.SingleOne(Card(num = sorted.get(cursor), pos = cursor)))
+                    myTurn.offerLast(
+                        Match.SingleOne(
+                            Card(
+                                mahjong = sorted.get(cursor)
+                            )
+                        )
+                    )
                     Logg.debugLn("([$start, $cursor]: headOfRow: $headOfRow) 单独的一个 last:$lastTopElement), 结果list: $myTurn")
                 } else {
-                    val cell = recordRangeFrom(sorted.subList(replaceCellStart, cursor + 1), 0)
+                    val cell = MatchMaker.makeMatch(sorted.subList(replaceCellStart, cursor + 1))
                     if (cell !is Match.None && cell.level > lastTopElement.level) {
                         myTurn.pollLast()
                         myTurn.offerLast(cell)
@@ -147,8 +132,7 @@ class MahjongGame {
                         myTurn.offerLast(
                             Match.SingleOne(
                                 Card(
-                                    num = sorted.get(cursor),
-                                    pos = cursor
+                                    mahjong = sorted.get(cursor)
                                 )
                             )
                         )
@@ -157,60 +141,6 @@ class MahjongGame {
                 }
             }
         }
-    }
-
-    /**
-     * @param start which index the window start from. Window will
-     * take three element into account at most each time
-     * to consider if it's a valid match.
-     *
-     * @param sorted must be a sorted list. If the sorted list's size is less than 3, normally the
-     * param 'start' will be 0.
-     * */
-    private fun recordRangeFrom(sorted: List<Mahjong>, start: Int): Match {
-        val a1 = sorted.getOrNull(start)
-        val a2 = sorted.getOrNull(start + 1)
-        val a3 = sorted.getOrNull(start + 2)
-        a1 ?: return Match.None(start)
-        return when {
-            a2 == null -> {
-                Match.SingleOne(Card(num = a1, pos = start))
-            }
-            a1 == a2 && a1 == a3 -> {
-                Match.Triples(Card(num = a1, pos = start))
-            }
-            a1 == a2 -> {
-                Match.Doubles(Card(num = a1, pos = start))
-            }
-            (a3?.num == a2.num + 1) && (a2.num == a1.num + 1) -> {
-                Match.ThreeCompany(
-                    first = Card(num = a1, pos = start),
-                    second = Card(num = a2, pos = start + 1),
-                    third = Card(num = a3, pos = start + 2)
-                )
-            }
-            (a2.num == a1.num + 1) -> {
-                Match.TwoSibling(
-                    first = Card(num = a1, pos = start),
-                    second = Card(num = a2, pos = start + 1),
-                )
-            }
-            (a2.num == a1.num + 2) -> {
-                Match.Next2Next(
-                    first = Card(num = a1, pos = start + 1),
-                    third = Card(num = a2, pos = start + 2),
-                    missing = a1.num + 1,
-                )
-            }
-            a3?.num == a2.num + 1 -> {
-                Match.TwoSibling(
-                    first = Card(num = a2, pos = start + 1),
-                    second = Card(num = a3, pos = start + 2),
-                )
-            }
-            else -> Match.None(start)
-        }
-
     }
 
     private fun isOnlyMissingOne(
