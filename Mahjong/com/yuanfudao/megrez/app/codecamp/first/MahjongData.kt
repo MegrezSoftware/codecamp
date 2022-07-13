@@ -1,9 +1,5 @@
 package com.yuanfudao.megrez.app.codecamp.first
 
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-
 interface Mahjong {
     val num: Int
     val shortName: String
@@ -60,7 +56,7 @@ enum class Character(override val num: Int, override val shortName: String = "ä¸
     }
 }
 
-data class Card(val num: Mahjong, val pos: Int)
+data class Card(val mahjong: Mahjong)
 
 data class CompetitorStatus(
     val missing: ArrayList<Match>,
@@ -70,7 +66,7 @@ data class CompetitorStatus(
     val matchs: List<Match>,
 )
 
-sealed class Match(val length: Int, val start: Int, val level: Int) {
+sealed class Match(val length: Int, val level: Int, val mahjongList: List<Mahjong>) {
     fun isMissing(): Boolean {
         return when (this) {
             is TwoSibling -> true
@@ -80,46 +76,64 @@ sealed class Match(val length: Int, val start: Int, val level: Int) {
         }
     }
 
-    data class SingleOne(val card: Card) : Match(1, card.pos, level = 11) {
+    data class SingleOne(val card: Card) :
+        Match(length = 1, level = 11, mahjongList = listOf(card.mahjong)) {
         override fun toString(): String {
-            return "[${card.num}]"
+            return "[${card.mahjong}]"
         }
     }
 
-    data class Doubles(val card: Card) : Match(2, card.pos, level = 19) {
+    data class Doubles(val card: Card) :
+        Match(length = 2, level = 19, mahjongList = (0 until 2).map { card.mahjong }) {
         override fun toString(): String {
-            return "[${card.num}${card.num}]"
+            return "[${card.mahjong}${card.mahjong}]"
         }
     }
 
-    data class Triples(val card: Card) : Match(3, card.pos, level = 20) {
+    data class Triples(val card: Card) :
+        Match(length = 3, level = 20, mahjongList = (0 until 3).map { card.mahjong }) {
         override fun toString(): String {
-            return "[${card.num}${card.num}${card.num}]"
+            return "[${card.mahjong}${card.mahjong}${card.mahjong}]"
+        }
+    }
+
+    data class Fours(val card: Card) :
+        Match(length = 4, level = 20, mahjongList = (0 until 4).map { card.mahjong }) {
+        override fun toString(): String {
+            return "[${card.mahjong}${card.mahjong}${card.mahjong}]"
         }
     }
 
     data class TwoSibling(val first: Card, val second: Card) :
-        Match(length = 2, first.pos, level = 18) {
+        Match(
+            length = 2,
+            level = 18,
+            mahjongList = listOf(first.mahjong, second.mahjong),
+        ) {
         override fun toString(): String {
-            return "[${first.num}${second.num}]"
+            return "[${first.mahjong}${second.mahjong}]"
         }
     }
 
     data class ThreeCompany(val first: Card, val second: Card, val third: Card) :
-        Match(length = 3, first.pos, level = 20) {
+        Match(
+            length = 3,
+            level = 20,
+            mahjongList = listOf(first.mahjong, second.mahjong),
+        ) {
         override fun toString(): String {
-            return "[${first.num}${second.num}${third.num}]"
+            return "[${first.mahjong}${second.mahjong}${third.mahjong}]"
         }
     }
 
     data class Next2Next(val first: Card, val third: Card, val missing: Int) :
-        Match(3, first.pos, level = 18) {
+        Match(3, level = 18, mahjongList = listOf(first.mahjong, third.mahjong)) {
         override fun toString(): String {
-            return "[${first.num}(*${missing})${third.num}]"
+            return "[${first.mahjong}(*${missing})${third.mahjong}]"
         }
     }
 
-    data class None(val pos: Int) : Match(length = 0, pos, level = 10) {
+    data class None(val pos: Int) : Match(length = 0, level = 10, mahjongList = emptyList()) {
         override fun toString(): String {
             return "[æ— (pos=$pos)]"
         }

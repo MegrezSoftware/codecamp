@@ -7,7 +7,6 @@ object MahjongCreator {
     /***
      * @throws IllegalArgumentException when the input size sumups are not equals to 13.
      * */
-    @Throws(IllegalArgumentException::class.java)
     fun fromString(circle: String, line: String, character: String) {
         fromIntList(
             circle = circle.split("").filter { it.isNotBlank() }.map { it.toInt() },
@@ -19,7 +18,6 @@ object MahjongCreator {
     /***
      * @throws IllegalArgumentException when the input size sumups are not equals to 13.
      * */
-    @Throws(IllegalArgumentException::class.java)
     fun fromIntList(circle: List<Int>, line: List<Int>, character: List<Int>) {
         val list = ArrayList<Mahjong>()
         circle.forEach { num ->
@@ -34,6 +32,10 @@ object MahjongCreator {
         require(list.size == 13) {
             "size=${list.size}不是13，list=$list"
         }
-        MahjongGame().checkWin(list)
+        getWinResult(list)
+    }
+
+    fun getWinResult(input: List<Mahjong>) {
+        WinChecker().checkWin(input)
     }
 }
