@@ -24,6 +24,7 @@ fun check(input: List<Int>): Boolean {
  * 判断13张牌是否听牌
  */
 fun check13(sortedInput: List<Int>): Set<Int> {
+    println("check13$sortedInput")
     if (sortedInput.size != 13)
         return emptySet()
     val bingoSet = mutableSetOf<Int>()
@@ -41,6 +42,7 @@ fun check13(sortedInput: List<Int>): Set<Int> {
  * @return  可以听哪些牌
  */
 fun check10(sortedInput: List<Int>): Set<Int> {
+    println("check10$sortedInput")
     if (sortedInput.size != 10)
         return emptySet()
     val bingoSet = mutableSetOf<Int>()
@@ -58,6 +60,7 @@ fun check10(sortedInput: List<Int>): Set<Int> {
  * @return  可以听哪些牌
  */
 fun check7(sortedInput: List<Int>): Set<Int> {
+    println("check7$sortedInput")
     if (sortedInput.size != 7)
         return emptySet()
     val bingoSet = mutableSetOf<Int>()
@@ -75,6 +78,7 @@ fun check7(sortedInput: List<Int>): Set<Int> {
  * @return  可以听哪些牌
  */
 fun check4(sortedInput: List<Int>): Set<Int> {
+    println("check4$sortedInput")
     if (sortedInput.size != 4)
         return emptySet()
     val bingoSet = mutableSetOf<Int>()
@@ -97,6 +101,7 @@ fun check4(sortedInput: List<Int>): Set<Int> {
  * @return  可以听哪些牌
  */
 fun check2(sortedInput: List<Int>): Set<Int> {
+    println("check2$sortedInput")
     if (sortedInput.size != 2)
         return emptySet()
     val bingoSet = mutableSetOf<Int>()
@@ -118,6 +123,7 @@ fun check2(sortedInput: List<Int>): Set<Int> {
  * @return  可以听哪些牌
  */
 fun check1(sortedInput: List<Int>): Set<Int> {
+    println("check1$sortedInput")
     if (sortedInput.size != 1)
         return emptySet()
     return setOf(sortedInput[0])
@@ -130,24 +136,24 @@ fun findTriple(sortedInput: List<Int>): List<List<Int>> {
     val result = mutableListOf<List<Int>>()
     var index = 0
     while (index < sortedInput.size - 2) {
+        //刻
         if (sortedInput[index] == sortedInput[index + 1] && sortedInput[index] == sortedInput[index + 2]) {
             result.add(listOf(sortedInput[index], sortedInput[index + 1], sortedInput[index + 2]))
+            index += 3
+        } else {
+            index++
         }
-        var senIndex = index + 1
-        while (senIndex < sortedInput.size - 1) {
-            if ((sortedInput[index] + 1) == sortedInput[senIndex]) {
-                var thIndex = senIndex + 1
-                while (thIndex < sortedInput.size) {
-                    if ((sortedInput[senIndex] + 1) == sortedInput[thIndex]) {
-                        result.add(listOf(sortedInput[index], sortedInput[senIndex], sortedInput[thIndex]))
-                    }
-                    thIndex++
-                }
-            }
-            senIndex++
+    }
+    index = 0
+    val distinctInput = sortedInput.distinct()
+    while (index < distinctInput.size - 2) {
+        //顺
+        if ((distinctInput[index] + 1) == distinctInput[index + 1] && (distinctInput[index] + 2) == distinctInput[index + 2]) {
+            result.add(listOf(distinctInput[index], distinctInput[index + 1], distinctInput[index + 2]))
+            index += 3
+        } else {
+            index++
         }
-
-        index++
     }
     return result
 }
@@ -171,6 +177,8 @@ fun findPair(sortedInput: List<Int>): List<List<Int>> {
  * 集合相减
  */
 fun exclude(sortedInput: List<Int>, delete: List<Int>): List<Int> {
+    println("sortedInput${sortedInput}")
+    println("delete${delete}")
     val result = sortedInput.toMutableList()
     return delete.fold(result) { acc, cur ->
         val deleteIndex = acc.indexOf(cur)
