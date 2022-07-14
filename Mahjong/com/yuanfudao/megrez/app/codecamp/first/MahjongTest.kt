@@ -21,7 +21,7 @@ class MahjongTest {
                 2 -> list.add(Circle.values().find { it.num == value }!!)
             }
         }
-        MahjongCreator.queryWhichCardToWin(list)
+        MahjongCreator.tellMeWhichCardToWin(list)
     }
 
     @Test

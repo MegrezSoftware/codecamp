@@ -14,7 +14,7 @@ class WhichToWin(
     }
 
     private fun initAnalyzing() {
-        // TODO: 合并三种牌的结果
+        // TODO: 合并三种牌的结果，现在是只支持单个种类的牌输入
 //        Candidate(match = LinkedList<List<Match>>().apply {
 //            circle?.match?.let { add(it) }
 //            line?.match?.let { add(it) }
@@ -40,27 +40,21 @@ class WhichToWin(
         val single = LinkedList<Match.SingleOne>()
         val threes = LinkedList<Match>()
         val next2Next = LinkedList<Match.Next2Next>()
-        var atLeastNeeded = 0
         var cardCount = 0
         kotlin.runCatching {
             candidate.match.forEach { match ->
                 when (match) {
                     is Match.SingleOne -> {
-                        atLeastNeeded++
                         single.add(match)
-                        candidate.missingOrThrow(match.card.num, missing)
                     }
                     is Match.Next2Next -> {
                         next2Next.add(match)
-                        candidate.missingOrThrow(match.missing, missing)
-                        atLeastNeeded++
                     }
                     is Match.Doubles -> {
                         doubles.add(match)
                     }
                     is Match.TwoSibling -> {
                         twoSibling.add(match)
-                        atLeastNeeded++
                     }
                     is Match.None -> {
                     }
@@ -82,7 +76,6 @@ class WhichToWin(
             threes = threes,
             cardCount = cardCount,
             twoSibling = twoSibling,
-            atLeastNeeded = atLeastNeeded,
             next2Next = next2Next,
         )
     }
@@ -177,47 +170,31 @@ class WhichToWin(
         return waitingCard
     }
 
-    private fun Candidate.missingOrThrow(targetNumber: Int, missing: HashSet<Int>) {
-        if (missing.contains(targetNumber)) {
-            throw DiscardException(" ---- 两次缺牌$targetNumber，直接判无法听牌")
-        } else if (stillOutThere(targetNumber)) {
-            missing.add(targetNumber)
-        }
-    }
-
     private fun Candidate.stillOutThere(targetNumber: Int): Boolean {
         return targetNumber in 1..9 && (4 - countMap.getOrDefault(targetNumber, 0) > 0)
     }
 
     fun getWhichToWinList(): List<Mahjong> {
         val result = ArrayList<Mahjong>()
-        result.addAll(circle?.run {
-            analyzeCandidate(circle).mapNotNull { tingCard ->
-                Circle.values().find { it.num == tingCard }
-            }
-        } ?: emptyList())
-        result.addAll(line?.run {
-            analyzeCandidate(line).mapNotNull { tingCard ->
-                Line.values().find { it.num == tingCard }
-            }
-        } ?: emptyList())
-        result.addAll(character?.run {
-            analyzeCandidate(character).mapNotNull { tingCard ->
-                Character.values().find { it.num == tingCard }
-            }
-        } ?: emptyList())
+        result.addAll(circle?.run { analyzeCandidate(this).asMahjong(this.inputSubSet) }
+            ?: emptyList())
+        result.addAll(line?.run { analyzeCandidate(this).asMahjong(this.inputSubSet) }
+            ?: emptyList())
+        result.addAll(character?.run { analyzeCandidate(this).asMahjong(this.inputSubSet) }
+            ?: emptyList())
         return result
     }
 
-
-    data class CalcMissingInfo(
-        val missing: HashSet<Int>,
-        val doubles: LinkedList<Match.Doubles>,
-        val single: LinkedList<Match.SingleOne>,
-        val threes: LinkedList<Match>,
-        val twoSibling: LinkedList<Match.TwoSibling>,
-        val next2Next: LinkedList<Match.Next2Next>,
-        val cardCount: Int,
-        val atLeastNeeded: Int,
-    )
+    private inline fun <reified T> List<Int>?.asMahjong(sameType: List<T>): List<T> where T : Mahjong {
+        val tingCards = this
+        if (tingCards.isNullOrEmpty()) return emptyList()
+        val first = sameType.first()
+        val findFrom = when (first) {
+            is Circle -> Circle.values()
+            is Line -> Line.values()
+            is Character -> Character.values()
+            else -> emptyArray()
+        }
+        return tingCards.mapNotNull { cardNum -> findFrom.find { it.num == cardNum } as? T }
+    }
 }

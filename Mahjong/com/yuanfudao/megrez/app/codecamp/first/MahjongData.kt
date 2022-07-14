@@ -1,6 +1,9 @@
 package com.yuanfudao.megrez.app.codecamp.first
 
 interface Mahjong {
+    val num: Int
+    val shortName: String
+
     companion object {
         fun createMahjong(
             data: Class<*>,
@@ -14,9 +17,6 @@ interface Mahjong {
             }
         }
     }
-
-    val num: Int
-    val shortName: String
 }
 
 enum class Circle(override val num: Int, override val shortName: String = "筒") : Mahjong {

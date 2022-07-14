@@ -22,7 +22,6 @@ class GroupArrangement {
 
         // combination on three type
         // only one pair will be allowed
-        var case = 1
         val combination =
             TakeIndexCombination().permute(listOf(resCircle.size, resLine.size, resCharacter.size))
         val alreadyDetermine = HashSet<Mahjong>()

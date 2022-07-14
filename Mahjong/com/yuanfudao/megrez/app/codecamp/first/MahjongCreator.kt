@@ -18,7 +18,7 @@ object MahjongCreator {
     /***
      * @throws IllegalArgumentException when the input size sumups are not equals to 13.
      * */
-    fun fromIntList(circle: List<Int>, line: List<Int>, character: List<Int>): List<Mahjong> {
+    private fun fromIntList(circle: List<Int>, line: List<Int>, character: List<Int>): List<Mahjong> {
         val list = ArrayList<Mahjong>()
         circle.forEach { num ->
             Circle.values().find { it.num == num }?.run { list.add(this) }
@@ -32,10 +32,10 @@ object MahjongCreator {
         require(list.size == 13) {
             "size=${list.size}不是13，list=$list"
         }
-        return queryWhichCardToWin(list)
+        return tellMeWhichCardToWin(list)
     }
 
-    fun queryWhichCardToWin(input: List<Mahjong>): List<Mahjong> {
+    fun tellMeWhichCardToWin(input: List<Mahjong>): List<Mahjong> {
         val option = GroupArrangement().generatePossiblePair(input)
         println()
         println("[ 输入手牌 ]：$input")
