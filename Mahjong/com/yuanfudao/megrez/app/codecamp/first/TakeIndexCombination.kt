@@ -3,18 +3,23 @@ package com.yuanfudao.megrez.app.codecamp.first
 import java.util.ArrayList
 
 class TakeIndexCombination {
+    private val isDebug = false
+    private fun debugLog(s: String) {
+        if (isDebug) println(s)
+    }
+
     fun permute(nums: List<Int>): List<List<Int>> {
         val len = nums.size
         val result = ArrayList<List<Int>>()
         if (len == 0) return result
 
         val temp = ArrayList<Int>()
-        Logg.debugLn("CASE: $temp")
+        debugLog("CASE: $temp")
         dfs(nums, 0, temp, result)
 
-        Logg.debugLn("Final Result: ")
+        debugLog("Final Result: ")
         result.forEachIndexed { index, list ->
-            Logg.debugLn("Answer ${index + 1}: $list")
+            debugLog("Answer ${index + 1}: $list")
         }
         return result
     }
@@ -40,7 +45,7 @@ class TakeIndexCombination {
         }
         for (i in 0 until canTake) {
             temp.add(i)
-            Logg.debugLn("depth=$depth, i=$i, $temp")
+            debugLog("depth=$depth, i=$i, $temp")
             dfs(nums, depth + 1, temp, result)
             temp.removeAt(temp.size - 1)
         }

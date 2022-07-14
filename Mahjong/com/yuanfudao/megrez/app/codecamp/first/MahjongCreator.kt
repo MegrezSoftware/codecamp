@@ -36,6 +36,6 @@ object MahjongCreator {
     }
 
     fun getWinResult(input: List<Mahjong>) {
-        WinChecker().checkWin(input)
+        GroupArrangement().generatePossiblePair(input)
     }
 }

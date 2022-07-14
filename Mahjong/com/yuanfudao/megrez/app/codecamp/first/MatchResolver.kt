@@ -7,23 +7,24 @@ import java.util.*
  */
 class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
 
+    private val countMap = TreeMap<Int, Int>()
+
     init {
+        list.forEach { mahjong ->
+            countMap[mahjong.num] = countMap.getOrDefault(mahjong.num, 0) + 1
+        }
     }
 
-    fun calcOnSameGroup(): ArrayList<List<Match>> {
+    fun resolveSameGroup(): ArrayList<Candidate> {
         val input: List<T> = list
-        val treeMap = TreeMap<Int, Int>()
-        input.forEach { mahjong ->
-            treeMap[mahjong.num] = treeMap.getOrDefault(mahjong.num, 0) + 1
-        }
-        val answer = ArrayList<List<Match>>()
+        val answer = ArrayList<Candidate>()
         if (input.isEmpty()) return answer
 
         findNextIndex(
             depth = 0,
             matchs = LinkedList<Match>(),
             cardBaseOn = input.first().num,
-            remainMap = treeMap,
+            remainMap = TreeMap(countMap),
             answer = answer
         )
         answer.forEach {
@@ -37,31 +38,49 @@ class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
         return this.keys.filter { cardNum -> (this[cardNum] ?: 0) > 0 && cardNum >= number }.take(3)
     }
 
+    private fun TreeMap<Int, Int>.anyValid(): List<Int> {
+        return this.keys.filter { cardNum -> (this[cardNum] ?: 0) > 0 }
+    }
+
     private fun TreeMap<Int, Int>.remainOne(): Boolean {
         return this.values.sum() <= 1
     }
+
 
     private fun findNextIndex(
         depth: Int,
         matchs: LinkedList<Match>,
         cardBaseOn: Int?,
         remainMap: TreeMap<Int, Int>,
-        answer: ArrayList<List<Match>>
+        answer: ArrayList<Candidate>
     ) {
         Logg.debugLn("- 递归：baseOn:$cardBaseOn, depth=$depth, matchs= $matchs, remainMap= $remainMap")
         if (list.size == depth || remainMap.remainOne()) {
             println("- 找到一组可能：baseOn:$cardBaseOn, matchs= $matchs, remainMap= $remainMap")
-            answer.add(matchs)
+            answer.add(
+                Candidate(
+                    inputSubSet = list,
+                    countMap = countMap,
+                    match = LinkedList(matchs),
+                    remainCard = remainMap.filter { it.value > 0 }.map { it.key }
+                        .first(), // only one remain
+                )
+            )
             return
         }
         cardBaseOn ?: return
-        val largerList = remainMap.thirdLargerThan(cardBaseOn)
+        val lasMatch: Match? = matchs.peekLast()
+        val largerList = if (lasMatch?.isMissing() == true) {
+            remainMap.thirdLargerThan(cardBaseOn)
+        } else {
+            remainMap.anyValid()
+        }
+
         Logg.debugLn("- baseOn:$cardBaseOn, nextCard= $largerList, remainMap= $remainMap")
         largerList.forEach { nextCard ->
             val mahjong = nextCard
                 ?.run { toMahjong(list.first()::class.java, this) }
                 ?: return
-            val lasMatch: Match? = matchs.peekLast()
             var isSingle = false
             kotlin.runCatching {
                 if (lasMatch == null || lasMatch.length > 3) throw DiscardExcepetion("no need to merge last")
