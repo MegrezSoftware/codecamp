@@ -5,7 +5,7 @@ import java.util.*
 data class Candidate(
     val inputSubSet: List<Mahjong>,
     val match: List<Match>,
-    val remainCard: Int,
+    val remainCard: Mahjong,
     val countMap: TreeMap<Int, Int>,
 ) {
 }

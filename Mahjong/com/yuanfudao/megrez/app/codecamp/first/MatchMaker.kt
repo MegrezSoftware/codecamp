@@ -24,41 +24,41 @@ object MatchMaker {
         a1 ?: return Match.None(start)
         return when {
             a2 == null -> {
-                Match.SingleOne(Card(mahjong = a1))
+                Match.SingleOne(card = a1)
             }
-            a1 == a2 && a1 == a3 && a3 == a4-> {
-                Match.Fours(Card(mahjong = a1))
+            a1 == a2 && a1 == a3 && a3 == a4 -> {
+                Match.Fours(card = a1)
             }
             a1 == a2 && a1 == a3 -> {
-                Match.Triples(Card(mahjong = a1))
+                Match.Triples(card = a1)
             }
             a1 == a2 -> {
-                Match.Doubles(Card(mahjong = a1))
+                Match.Doubles(card = a1)
             }
             (a3?.num == a2.num + 1) && (a2.num == a1.num + 1) -> {
                 Match.ThreeCompany(
-                    first = Card(mahjong = a1),
-                    second = Card(mahjong = a2),
-                    third = Card(mahjong = a3)
+                    first = a1,
+                    second = a2,
+                    third = a3
                 )
             }
             (a2.num == a1.num + 1) -> {
                 Match.TwoSibling(
-                    first = Card(mahjong = a1),
-                    second = Card(mahjong = a2),
+                    first = a1,
+                    second = a2,
                 )
             }
             (a2.num == a1.num + 2) -> {
                 Match.Next2Next(
-                    first = Card(mahjong = a1),
-                    third = Card(mahjong = a2),
+                    first = a1,
+                    third = a2,
                     missing = a1.num + 1,
                 )
             }
             a3?.num == a2.num + 1 -> {
                 Match.TwoSibling(
-                    first = Card(mahjong = a2),
-                    second = Card(mahjong = a3),
+                    first = a2,
+                    second = a3,
                 )
             }
             else -> Match.None(start)

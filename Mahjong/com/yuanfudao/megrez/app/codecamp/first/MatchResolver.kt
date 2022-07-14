@@ -1,5 +1,6 @@
 package com.yuanfudao.megrez.app.codecamp.first
 
+import com.yuanfudao.megrez.app.codecamp.first.Mahjong.Companion.createMahjong
 import java.util.*
 
 /**
@@ -46,7 +47,9 @@ class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
         return this.values.sum() <= 1
     }
 
-
+    /**
+     * TODO 优化剪枝：相同remainMap的数据其实是一个组合，可以直接存储读取
+     * */
     private fun findNextIndex(
         depth: Int,
         matchs: LinkedList<Match>,
@@ -54,20 +57,23 @@ class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
         remainMap: TreeMap<Int, Int>,
         answer: ArrayList<Candidate>
     ) {
-        Logg.debugLn("- 递归：baseOn:$cardBaseOn, depth=$depth, matchs= $matchs, remainMap= $remainMap")
-        if (list.size == depth || remainMap.remainOne()) {
-            println("- 找到一组可能：baseOn:$cardBaseOn, matchs= $matchs, remainMap= $remainMap")
+        // only one remain
+        val remainNumber = remainMap.filter { it.value > 0 }.map { it.key }.first()
+        val remainMahjong = createMahjong(list.first()::class.java, remainNumber)
+        val onlyRemainOne = remainMap.remainOne()
+         if ((list.size == depth || onlyRemainOne) && remainMahjong != null) {
+            Logg.debugLn("- 找到一组可能：baseOn:$cardBaseOn, matchs= $matchs, remainMap= $remainMap")
             answer.add(
                 Candidate(
                     inputSubSet = list,
                     countMap = countMap,
                     match = LinkedList(matchs),
-                    remainCard = remainMap.filter { it.value > 0 }.map { it.key }
-                        .first(), // only one remain
+                    remainCard = remainMahjong,
                 )
             )
             return
         }
+        Logg.debugLn("-- 递归：baseOn:$cardBaseOn, depth=$depth, matchs= $matchs, remainMap= $remainMap")
         cardBaseOn ?: return
         val lasMatch: Match? = matchs.peekLast()
         val largerList = if (lasMatch?.isMissing() == true) {
@@ -78,22 +84,20 @@ class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
 
         Logg.debugLn("- baseOn:$cardBaseOn, nextCard= $largerList, remainMap= $remainMap")
         largerList.forEach { nextCard ->
-            val mahjong = nextCard
-                ?.run { toMahjong(list.first()::class.java, this) }
-                ?: return
+            val mahjong = createMahjong(list.first()::class.java, nextCard) ?: return
             var isSingle = false
             kotlin.runCatching {
-                if (lasMatch == null || lasMatch.length > 3) throw DiscardExcepetion("no need to merge last")
+                if (lasMatch == null || lasMatch.length > 3) throw DiscardException(" ------ no need to merge last")
                 val merge = (lasMatch.mahjongList + mahjong)
                 MatchMaker.makeMatch(merge).apply {
                     if (this == lasMatch || this.level <= lasMatch.level) {
-                        throw  DiscardExcepetion("no need to merge last")
+                        throw DiscardException(" ------ no need to merge last")
                     }
                 }
             }.apply { printError() }
                 .onFailure {
                     isSingle = true
-                    matchs.offerLast(Match.SingleOne(Card(mahjong = mahjong)))
+                    matchs.offerLast(Match.SingleOne(mahjong))
                     Logg.debugLn("- 单张牌 ${mahjong.num}，上一个 $lasMatch 无法合并")
                 }.onSuccess { merge ->
                     matchs.pollLast()
@@ -107,7 +111,7 @@ class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
             Logg.debugLn("- 牌 ${mahjong} 还剩下 ${old - 1}个， matchs: $matchs, lasMatch: $lasMatch, nextCard:$nextCard")
             findNextIndex(depth + 1, matchs, nextCard, remainMap, answer)
 
-            val thisMatch = matchs.pollLast()
+            matchs.pollLast()
             if (!isSingle) {
                 lasMatch?.let { matchs.offerLast(it) }
             }
@@ -115,27 +119,4 @@ class MatchResolver<T>(private val list: List<T>) where T : Mahjong {
             Logg.debugLn("- 回溯到牌 ${mahjong} 还剩下 ${old}个，matchs: $matchs, lasMatch: $lasMatch, nextCard:$nextCard")
         }
     }
-
-    private fun toMahjong(
-        data: Class<*>,
-        num: Int
-    ): Mahjong? {
-        return when (data) {
-            Circle::class.java -> Circle.values().find { it.num == num }
-            Line::class.java -> Line.values().find { it.num == num }
-            Character::class.java -> Character.values().find { it.num == num }
-            else -> null
-        }
-    }
-
-    private fun <T> Result<T>.printError() {
-        this.onFailure {
-            if (it !is DiscardExcepetion) {
-                it.printStackTrace()
-            }
-        }
-    }
-
-    data class DiscardExcepetion(val msg: String? = "", val throws: Throwable? = null) :
-        java.lang.IllegalStateException(msg, throws)
 }

@@ -7,8 +7,8 @@ object MahjongCreator {
     /***
      * @throws IllegalArgumentException when the input size sumups are not equals to 13.
      * */
-    fun fromString(circle: String, line: String, character: String) {
-        fromIntList(
+    fun fromString(circle: String, line: String, character: String): List<Mahjong> {
+        return fromIntList(
             circle = circle.split("").filter { it.isNotBlank() }.map { it.toInt() },
             line = line.split("").filter { it.isNotBlank() }.map { it.toInt() },
             character = character.split("").filter { it.isNotBlank() }.map { it.toInt() },
@@ -18,7 +18,7 @@ object MahjongCreator {
     /***
      * @throws IllegalArgumentException when the input size sumups are not equals to 13.
      * */
-    fun fromIntList(circle: List<Int>, line: List<Int>, character: List<Int>) {
+    fun fromIntList(circle: List<Int>, line: List<Int>, character: List<Int>): List<Mahjong> {
         val list = ArrayList<Mahjong>()
         circle.forEach { num ->
             Circle.values().find { it.num == num }?.run { list.add(this) }
@@ -32,10 +32,15 @@ object MahjongCreator {
         require(list.size == 13) {
             "size=${list.size}不是13，list=$list"
         }
-        getWinResult(list)
+        return queryWhichCardToWin(list)
     }
 
-    fun getWinResult(input: List<Mahjong>) {
-        GroupArrangement().generatePossiblePair(input)
+    fun queryWhichCardToWin(input: List<Mahjong>): List<Mahjong> {
+        val option = GroupArrangement().generatePossiblePair(input)
+        println()
+        println("[ 输入手牌 ]：$input")
+        println("[ 听牌结果 ]：${option.joinToString("或")}")
+        println()
+        return option
     }
 }

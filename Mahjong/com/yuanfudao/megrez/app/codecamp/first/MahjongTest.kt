@@ -21,32 +21,21 @@ class MahjongTest {
                 2 -> list.add(Circle.values().find { it.num == value }!!)
             }
         }
-        MahjongCreator.getWinResult(list)
+        MahjongCreator.queryWhichCardToWin(list)
     }
 
     @Test
-    fun launchMultiPresetCaseTest() {
-//        MahjongCreator.fromIntList(
-//            circle = listOf(1, 1, 2, 2, 2, 4, 5),
-//            line = listOf(4),
-//            character = listOf(4, 5, 5, 6, 8)
-//        )
-//        MahjongCreator.fromString(
-//            circle = "1112345678999",
-//            line = "",
-//            character = "",
-//        )
+     fun launchMultiPresetCaseTest() {
+        // TODO 目前只支持一个种类的牌输入
+        MahjongCreator.fromString(
+            circle = "1112345678999",
+            line = "",
+            character = "",
+        )
         MahjongCreator.fromString(
             circle = "1231231234568",
             line = "",
             character = "",
         )
-    }
-
-
-    @Test
-    fun testIndexPremutation() {
-        val list = listOf(5, 3, 2)
-        val res = TakeIndexCombination().permute(list)
     }
 }
