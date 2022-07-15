@@ -117,7 +117,7 @@ function main (arr13, another) {
 
   const illegal = arr14.filter(item => item === another).length > 4
 
-  if (illegal) return
+  if (illegal) return []
 
   const Q = findQ(arr14)
 
@@ -151,7 +151,9 @@ function main (arr13, another) {
     }
   })
 
-  success.length && console.log('[info]', 'success', success)
+  DEBUG && success.length && console.log('[debug]', 'success', success)
+
+  return success
 }
 
 const all = [
@@ -160,10 +162,18 @@ const all = [
   21, 22, 23, 24, 25, 26, 27, 28, 29
 ]
 
-const index = 0
+testCase.forEach(test => {
+  let finalResult = []
 
-console.log('case', testCase[index])
+  console.log(`---------- case #${test.id} ----------`)
 
-all.forEach(item => {
-  main(testCase[index], item)
+  console.log('case', test)
+
+  all.forEach(item => {
+    const result = main(test.data, item)
+
+    finalResult = [...finalResult, ...result]
+  })
+
+  console.log('result', finalResult)
 })
