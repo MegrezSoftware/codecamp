@@ -66,18 +66,18 @@ function removePPP (P, arr) {
   const res = []
 
   if (P.length) {
-    P.forEach(p => {
-      const copy = arr.slice()
+    let removedPPP = arr.slice()
 
-      const removedPPP = copy.join(',')
+    P.forEach(p => {
+      removedPPP = removedPPP.join(',')
         .replace(p, '')
         .replace(p, '')
         .replace(p, '')
         .split(',')
         .filter(item => item)
-
-      res.push(removedPPP)
     })
+
+    res.push(removedPPP)
   } else {
     res.push(arr)
   }
@@ -160,7 +160,7 @@ const all = [
   21, 22, 23, 24, 25, 26, 27, 28, 29
 ]
 
-const index = 3
+const index = 0
 
 console.log('case', testCase[index])
 
