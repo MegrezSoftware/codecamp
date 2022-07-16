@@ -2,23 +2,41 @@
  * Created by muchuanxin on 2022-07-09
  */
 fun main() {
-    val case1 = listOf(Mahjong.WAN1, Mahjong.WAN2, Mahjong.WAN3)
-    val case2 = listOf(
-        Mahjong.WAN2, Mahjong.WAN2, Mahjong.WAN3, Mahjong.WAN4, Mahjong.TONG1, Mahjong.TONG2, Mahjong.TONG3, Mahjong.TONG2, Mahjong.TONG3,
-        Mahjong.TONG4, Mahjong.TIAO2, Mahjong.TIAO2, Mahjong.TIAO2,
-    )
-    val case3 = listOf(
-        Mahjong.WAN2, Mahjong.WAN2, Mahjong.WAN2, Mahjong.WAN4, Mahjong.TONG1, Mahjong.TONG2, Mahjong.TONG3, Mahjong.TONG2, Mahjong.TONG3,
-        Mahjong.TONG4, Mahjong.TIAO2, Mahjong.TIAO2, Mahjong.TIAO2,
-    )
-    val case4 = listOf(
-        Mahjong.WAN2, Mahjong.WAN2, Mahjong.WAN2, Mahjong.WAN3, Mahjong.WAN3, Mahjong.WAN4, Mahjong.TONG1, Mahjong.TONG2, Mahjong.TONG3,
-        Mahjong.TONG2, Mahjong.TONG3, Mahjong.TONG4, Mahjong.TIAO2,
-    )
-    println("case1: ${whichCardToTing(case1).joinToString { it.name }}")
-    println("case2: ${whichCardToTing(case2).joinToString { it.name }}")
-    println("case3: ${whichCardToTing(case3).joinToString { it.name }}")
-    println("case4: ${whichCardToTing(case4).joinToString { it.name }}")
+    require(convertInputAndOutput("223344-234-2234") == "--25")
+    require(convertInputAndOutput("1112345678999") == "123456789")
+    require(convertInputAndOutput("23456-22233-789") == "147")
+    require(convertInputAndOutput("123456-23444-55") == "-14-5")
+    require(convertInputAndOutput("1112378999-123-") == "1469")
+    require(convertInputAndOutput("2344445688999") == "178")
+}
+
+fun convertInputAndOutput(input: String): String {
+    val convertInput = mutableListOf<Mahjong>()
+    input.split("-").forEachIndexed { index, s ->
+        s.forEach { c ->
+            Mahjong.parse(index * 10 + c.digitToInt())?.also {
+                convertInput.add(it)
+            } ?: throw IllegalArgumentException()
+        }
+    }
+    val tingCards = whichCardToTing(convertInput)
+    val wan = StringBuilder()
+    val tong = StringBuilder()
+    val tiao = StringBuilder()
+    tingCards.forEach {
+        when {
+            it.value < 10 -> wan.append(it.value)
+            it.value < 20 -> tong.append(it.value - 10)
+            else -> tiao.append(it.value - 20)
+        }
+    }
+    if (tong.isNotEmpty() || tiao.isNotEmpty()) {
+        wan.append("-").append(tong)
+    }
+    if (tiao.isNotEmpty()) {
+        wan.append("-").append(tiao)
+    }
+    return wan.toString()
 }
 
 /**
@@ -53,7 +71,7 @@ fun whichCardToTing(handCards: List<Mahjong>): List<Mahjong> {
  * @return true不值得听
  */
 fun worthNotToTing(counts: IntArray, tingCard: Int): Boolean {
-    return counts[tingCard] + counts[tingCard - 1] + counts[tingCard + 1] == 0
+    return counts[tingCard] + counts[tingCard - 1] + counts[tingCard + 1] == 0 || counts[tingCard] == 4
 }
 
 /**
@@ -93,4 +111,9 @@ enum class Mahjong(val value: Int) {
     // 条1~9
     TIAO1(21), TIAO2(22), TIAO3(23), TIAO4(24), TIAO5(25), TIAO6(26), TIAO7(27), TIAO8(28), TIAO9(29);
 
+    companion object {
+        fun parse(value: Int): Mahjong? {
+            return values().find { it.value == value }
+        }
+    }
 }
