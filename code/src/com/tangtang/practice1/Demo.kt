@@ -1,38 +1,47 @@
 package com.tangtang.practice1
 
 import java.io.File
-import java.lang.Exception
 
 fun main(args: Array<String>) {
-    val dataList = extractData("code/src/com/tangtang/practice1/testCases.txt")
-    dataList.map { HandTile(it.first) to it.second }.forEach(::info)
+    val dataList = extractData("TestCase-1.txt")
+    dataList.map { HandTile(it.handMahjongList) to it }.forEach(::info)
 }
 
-private fun info(pair: Pair<HandTile, String>) {
-    val (handTile, txt) = pair
-    val list = handTile.checkReady()
-    if (list.isEmpty()) {
-        println("it is not ready for winning.(HandTile: $txt)")
+private fun info(pair: Pair<HandTile, TestCase>) {
+    val (handTile, testCase) = pair
+    val readies = handTile.checkReady()
+    if (readies.isEmpty()) {
+        println("it is not ready for winning. (TestCase: $testCase)")
     } else {
-        println("it is ready : $list (HandTile: $txt)")
+        println("it is ready : expect = ${testCase.winningList}, actual = ${readies}. (TestCase: $testCase)")
     }
 }
 
-fun extractData(path: String): List<Pair<List<Mahjong>, String>> {
+fun extractData(path: String): List<TestCase> {
     val file = File(path)
-    return file.readLines().filter { it.isNotBlank() }.map {
-        createMahjong(it) to it
-    }
+    return file.readLines().filter { it.isNotBlank() }.map(::createTestCases)
 }
 
-fun createMahjong(txt: String): List<Mahjong> {
-    return txt.split(";").mapNotNull {
-        try {
-            val v = it[0].toString().toInt()
-            val t = it[1].toString()
-            Mahjong.create(v, t)
-        } catch (e: Exception) {
-            null
+fun createTestCases(txt: String): TestCase {
+    val rawStr = txt.split(",")
+    val handMahjongList = parseMahjong(rawStr.getOrNull(0) ?: "")
+    val winningList = parseMahjong(rawStr.getOrNull(1) ?: "").toSet()
+    return TestCase(txt, handMahjongList, winningList)
+}
+
+private fun parseMahjong(mahjongString: String): List<Mahjong> {
+    val zero = '0'.code
+    return mahjongString.split("-").flatMapIndexed { index, str ->
+        when (index) {
+            0 -> str.map { Character(it.code - zero) }
+            1 -> str.map { Circle(it.code - zero) }
+            else -> str.map { Bamboo(it.code - zero) }
         }
     }
 }
+
+data class TestCase(
+    val rawString: String,
+    val handMahjongList: List<Mahjong>,
+    val winningList: Set<Mahjong>
+)

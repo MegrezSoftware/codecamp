@@ -1,7 +1,5 @@
 package com.tangtang.practice1
 
-import kotlin.math.pow
-
 /**
  *
 洗牌 shuffle tiles (or cards)
@@ -54,12 +52,12 @@ sealed class Mahjong(val value: Int, val type: String) {
     }
 
     companion object {
-        fun create(v: Int, t: String): Mahjong? {
-            if (v < 1 || v > 9) return null
-            return when (t) {
-                "萬" -> Character(v)
-                "筒" -> Circle(v)
-                "条" -> Bamboo(v)
+        fun create(value: Int, type: String): Mahjong? {
+            if (value < 1 || value > 9) return null
+            return when (type) {
+                "萬" -> Character(value)
+                "筒" -> Circle(value)
+                "条" -> Bamboo(value)
                 else -> null
             }
         }
