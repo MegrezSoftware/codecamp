@@ -1,20 +1,12 @@
-package com.tangtang.practice1
+package com.tangtang.practice2
 
-import com.tangtang.IHandTile
+import com.tangtang.practice1.*
 
-open class HandTile(data: List<Mahjong>) : IHandTile {
-    protected val mahjong13Array: IntArray = IntArray(30)
 
-    init {
-        data.forEach {
-            val index = when (it) {
-                is Character -> it.value
-                is Circle -> 10 + it.value
-                is Bamboo -> 20 + it.value
-            }
-            mahjong13Array[index]++
-        }
-    }
+class HandTileWithPower(
+    data: List<Mahjong>,
+    private val powerTileCount: Int = 13 - data.size
+) : HandTile(data) {
 
     override fun checkReady(): Set<Mahjong> {
         val readies = mutableSetOf<Mahjong>()
@@ -39,9 +31,14 @@ open class HandTile(data: List<Mahjong>) : IHandTile {
     private fun checkWinning(mahjong13Array: IntArray, straightOrSet: Int, pair: Int): Boolean {
         if (straightOrSet < 0) return false
         if (pair < 0) return false
-        if (mahjong13Array.any { it < 0 }) return false
 
-        if (straightOrSet == 0 && pair == 0 && mahjong13Array.all { it == 0 }) return true
+        val neededPowerTileCount = mahjong13Array.sumOf { if (it > 0) 0 else -it }
+        val restPowerTileCount = powerTileCount - neededPowerTileCount
+        if (restPowerTileCount < 0) return false
+
+        if (restPowerTileCount == 0 && straightOrSet == 0 && pair == 0) {
+            return true
+        }
 
         mahjong13Array.forEachIndexed { index, count ->
             val tileIdx = index % 10

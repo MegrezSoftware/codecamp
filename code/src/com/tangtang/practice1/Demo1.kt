@@ -7,7 +7,7 @@ fun main(args: Array<String>) {
     dataList.map { HandTile(it.handMahjongList) to it }.forEach(::info)
 }
 
-private fun info(pair: Pair<HandTile, TestCase>) {
+private fun info(pair: Pair<HandTile, TestCase1>) {
     val (handTile, testCase) = pair
     val readies = handTile.checkReady()
     if (readies.isEmpty()) {
@@ -17,16 +17,16 @@ private fun info(pair: Pair<HandTile, TestCase>) {
     }
 }
 
-fun extractData(path: String): List<TestCase> {
+fun extractData(path: String): List<TestCase1> {
     val file = File(path)
     return file.readLines().filter { it.isNotBlank() }.map(::createTestCases)
 }
 
-fun createTestCases(txt: String): TestCase {
+fun createTestCases(txt: String): TestCase1 {
     val rawStr = txt.split(",")
     val handMahjongList = parseMahjong(rawStr.getOrNull(0) ?: "")
     val winningList = parseMahjong(rawStr.getOrNull(1) ?: "").toSet()
-    return TestCase(txt, handMahjongList, winningList)
+    return TestCase1(txt, handMahjongList, winningList)
 }
 
 private fun parseMahjong(mahjongString: String): List<Mahjong> {
@@ -40,7 +40,7 @@ private fun parseMahjong(mahjongString: String): List<Mahjong> {
     }
 }
 
-data class TestCase(
+data class TestCase1(
     val rawString: String,
     val handMahjongList: List<Mahjong>,
     val winningList: Set<Mahjong>
