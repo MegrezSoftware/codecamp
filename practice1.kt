@@ -40,6 +40,10 @@ fun decrease(cntMap:List<Int>, pattern: List<Int>): List<Int> =
 
 //Logics
 
+public fun ting(patterns:List<MajongItem>): List<MajongItem> = MajongItem.allCases.filter {
+    isWin(patterns + it)
+}
+
 public fun isWin(patterns:List<MajongItem>) = isWin2(toCntMap(patterns.map(MajongItem::toInt)))
 
 fun isWin2(cntMap:List<Int>) = if(cntMap.sum() != 14 || cntMap.count { it > 4 } >  0) false else isWin(cntMap, 4, 1)
@@ -73,9 +77,7 @@ fun runCase(s:String): Boolean {
     val parts = s.split(",")
     val input = extract(parts[0])
     val expected = extract(parts[1])
-    val output = MajongItem.allCases.filter {
-        isWin(input + it)
-    }
+    val output = ting(input)
     return (output == expected).also {
         println(if(it) "PASSED" else "FAILED")
         println("case:  " + input.map(MajongItem::toInt))
