@@ -42,7 +42,7 @@ fun decrease(cntMap:List<Int>, pattern: List<Int>): List<Int> =
 
 public fun isWin(patterns:List<MajongItem>) = isWin2(toCntMap(patterns.map(MajongItem::toInt)))
 
-fun isWin2(cntMap:List<Int>) = if(cntMap.sum() != 14) false else isWin(cntMap, 4, 1)
+fun isWin2(cntMap:List<Int>) = if(cntMap.sum() != 14 || cntMap.count { it > 4 } >  0) false else isWin(cntMap, 4, 1)
 
 //tPattern 预期生成triple的数量
 //pPattern 预期生成pair的数量
@@ -77,12 +77,10 @@ fun runCase(s:String): Boolean {
         isWin(input + it)
     }
     return (output == expected).also {
-        if (!it){
-             println("FAILED")
-             println("case:  " + input.map(MajongItem::toInt))
-             println("got:   " + output.map(MajongItem::toInt))
-             println("expect:" + expected.map(MajongItem::toInt))
-        }
+        println(if(it) "PASSED" else "FAILED")
+        println("case:  " + input.map(MajongItem::toInt))
+        println("got:   " + output.map(MajongItem::toInt))
+        println("expect:" + expected.map(MajongItem::toInt))
     }
 }
 
