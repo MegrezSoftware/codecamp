@@ -79,15 +79,17 @@ object MahjongWaitingFinder {
      */
     private fun check14(pai: IntArray, arbitraryCount: Int): Boolean {
         // 利用回溯来处理多种情况的判断
-        return dfs(arbitraryCount, pai, 1, 4, 1)
+        return searchBaseOnDepth(arbitraryCount, pai, 1, 4, 1)
     }
 
     /**
-     * 递归
-     * c3 刻/顺的个数
-     * c2 对的数量
-     */
-    private fun dfs(
+     * @param arbitraryCount 总共任意牌的个数
+     * @param remain 手牌按桶计数列表
+     * @param depth 当前需要决定分支的牌在下标。万筒条下标不会重复，分别在三个区间
+     * @param threeCount 还需要满足的三个（顺或刻）的个数
+     * @param threeCount 还需要满足的对儿个数
+     * */
+    private fun searchBaseOnDepth(
         arbitraryCount: Int,
         remain: IntArray,
         depth: Int,
@@ -95,6 +97,7 @@ object MahjongWaitingFinder {
         twoCount: Int
     ): Boolean {
         val lacks = remain.fold(0) { acc, each -> if (each < 0) acc + each else acc }
+        // 允许赊账。但想赊账的个数超过任意牌个数，无法再赊
         if (arbitraryCount > 0 && Math.abs(lacks) > arbitraryCount) {
             return false
         } else if (threeCount < 0 || twoCount < 0) {
@@ -111,16 +114,17 @@ object MahjongWaitingFinder {
                     Math.abs(lacks) == arbitraryCount
                 }
                 threeCount == 1 && twoCount == 0 -> {
+                    // 剩余三张任意牌，可以直接赊账一个顺或者一个刻
                     Math.abs(lacks) + 3 == arbitraryCount
                 }
                 threeCount == 0 && twoCount == 0 -> {
+                    // 剩余两张任意牌，可以直接赊账一个对儿
                     Math.abs(lacks) + 2 == arbitraryCount
                 }
                 else -> false
             }
         }
         return judgeByThisCardRemain(
-            thisCardRemain = remain[i],
             arbitraryCount = arbitraryCount,
             remain = remain,
             depth = i,
@@ -129,14 +133,21 @@ object MahjongWaitingFinder {
         )
     }
 
+    /**
+     * @param arbitraryCount 总共任意牌的个数
+     * @param remain 手牌按桶计数列表
+     * @param depth 当前需要决定分支的牌在下标。万筒条下标不会重复，分别在三个区间
+     * @param threeCount 还需要满足的三个（顺或刻）的个数
+     * @param threeCount 还需要满足的对儿个数
+     * */
     private fun judgeByThisCardRemain(
-        thisCardRemain: Int,
         arbitraryCount: Int,
         remain: IntArray,
         depth: Int,
         threeCount: Int,
         twoCount: Int,
     ): Boolean {
+        val thisCardRemain = remain[depth]
         if (thisCardRemain < 0) {
             return false
         }
@@ -146,18 +157,17 @@ object MahjongWaitingFinder {
             1 -> {
                 // 赊账自己，凑成一对拿走
                 remain[i] = remain[i] - 2
-                val twins = dfs(arbitraryCount, remain, i + 1, threeCount, twoCount - 1)
+                val twins = searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount, twoCount - 1)
                 remain[i] = remain[i] + 2
                 if (twins) {
                     return true
                 }
                 // 赊账2张连续的牌，拿一个顺
-                // 可能是一左一右，可能是以i为起点连续的三张牌
                 if (i + 2 < len) {
                     remain[i]--
                     remain[i + 1]--
                     remain[i + 2]--
-                    val threeSequence = dfs(arbitraryCount, remain, i + 1, threeCount - 1, twoCount)
+                    val threeSequence = searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount - 1, twoCount)
                     remain[i]++
                     remain[i + 1]++
                     remain[i + 2]++
@@ -168,14 +178,14 @@ object MahjongWaitingFinder {
             2 -> {
                 // 赊账拿走一个刻。虽然目前只有一对，但是尝试赊账一张任意牌成为顺
                 remain[i] = remain[i] - 3
-                val triple = dfs(arbitraryCount, remain, i + 1, threeCount - 1, twoCount)
+                val triple = searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount - 1, twoCount)
                 remain[i] = remain[i] + 3
                 if (triple) {
                     return true
                 }
                 // 拿走一对
                 remain[i] = remain[i] - 2
-                val twins = dfs(arbitraryCount, remain, i + 1, threeCount, twoCount - 1)
+                val twins = searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount, twoCount - 1)
                 remain[i] = remain[i] + 2
                 if (twins) {
                     return true
@@ -188,7 +198,7 @@ object MahjongWaitingFinder {
                 remain[i + 1] = remain[i + 1] - 2
                 remain[i + 2] = remain[i + 2] - 2
                 val doubleThreeSequence =
-                    dfs(arbitraryCount, remain, i + 1, threeCount - 2, twoCount)
+                    searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount - 2, twoCount)
                 remain[i] = remain[i] + 2
                 remain[i + 1] = remain[i + 1] + 2
                 remain[i + 2] = remain[i + 2] + 2
@@ -197,7 +207,7 @@ object MahjongWaitingFinder {
             else -> {
                 // 拿走一个刻，可能多余3张，所以下标i不挪
                 remain[i] = remain[i] - 3
-                val triple = dfs(arbitraryCount, remain, i, threeCount - 1, twoCount)
+                val triple = searchBaseOnDepth(arbitraryCount, remain, i, threeCount - 1, twoCount)
                 remain[i] = remain[i] + 3
                 if (triple) {
                     return true
@@ -206,7 +216,7 @@ object MahjongWaitingFinder {
                 // 不可能再出现3条顺的情况 因为等价于3个刻
                 remain[i] = remain[i] - 2
                 // i不用加1
-                val twins = dfs(arbitraryCount, remain, i, threeCount, twoCount - 1)
+                val twins = searchBaseOnDepth(arbitraryCount, remain, i, threeCount, twoCount - 1)
                 remain[i] = remain[i] + 2
                 return twins
             }
