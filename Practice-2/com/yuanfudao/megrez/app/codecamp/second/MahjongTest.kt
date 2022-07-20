@@ -10,7 +10,7 @@ import org.junit.Test
 class MahjongTest {
     @Test
     fun launchMultiPresetCaseTest() {
-        val caseFileName = "/Users/eva/TestCase-1.txt"
+        val caseFileName = "/Users/eva/TestCase-2.txt"
         MahjongScanner.testCaseToAnswer(caseFileName)
     }
 }
