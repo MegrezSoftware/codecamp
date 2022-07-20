@@ -1,11 +1,19 @@
-package com.yuanfudao.megrez.app.codecamp.first
+package com.yuanfudao.megrez.app.codecamp.second
 
 interface Mahjong {
     val num: Int
     val shortName: String
+    val internalOffset: Int
+
+    fun toInnerIndex() = num + internalOffset
 }
 
-enum class Circle(override val num: Int, override val shortName: String = "筒") : Mahjong {
+
+enum class Circle(
+    override val num: Int,
+    override val shortName: String = "筒",
+    override val internalOffset: Int = 10,
+) : Mahjong {
     ONE(1),
     TWO(2),
     THREE(3),
@@ -17,12 +25,17 @@ enum class Circle(override val num: Int, override val shortName: String = "筒")
     NINE(9),
     ;
 
+
     override fun toString(): String {
         return "y$num"
     }
 }
 
-enum class Line(override val num: Int, override val shortName: String = "条") : Mahjong {
+enum class Line(
+    override val num: Int,
+    override val shortName: String = "条",
+    override val internalOffset: Int = 20,
+) : Mahjong {
     ONE(1),
     TWO(2),
     THREE(3),
@@ -39,7 +52,11 @@ enum class Line(override val num: Int, override val shortName: String = "条") :
     }
 }
 
-enum class Character(override val num: Int, override val shortName: String = "万") : Mahjong {
+enum class Character(
+    override val num: Int,
+    override val shortName: String = "万",
+    override val internalOffset: Int = 0,
+) : Mahjong {
     ONE(1),
     TWO(2),
     THREE(3),
