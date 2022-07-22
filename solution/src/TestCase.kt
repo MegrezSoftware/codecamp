@@ -1,5 +1,5 @@
 interface ISolution {
-    fun execute(input: Input): String
+    fun execute(existCard: ExistCard): DependentCard
 }
 
 class TestCase(private val case: String) {
@@ -29,17 +29,14 @@ class TestCase(private val case: String) {
     fun test(solution: ISolution) {
         val executeLog = StringBuilder()
         executeLog.appendLine("execute case: $case")
-        val actualResult = solution.execute(
-            Input(
-                wanCards(),
-                tongCards(),
-                tiaoCards(),
-                anyCards()
-            )
-        )
-        executeLog.appendLine("actual result:$actualResult")
+        val wanCardGroup = CardGroup(wanCards())
+        val tongCardGroup = CardGroup(tongCards())
+        val tiaoCard = CardGroup(tiaoCards())
+        val existCard = ExistCard(listOf(wanCardGroup, tongCardGroup, tiaoCard))
+        val dependentCardResult = solution.execute(existCard).genResultString()
+        executeLog.appendLine("actual result:${dependentCardResult}")
         executeLog.appendLine("expect result:$result")
-        if (actualResult == result) {
+        if (dependentCardResult == result) {
             executeLog.appendLine("--pass--")
         } else {
             executeLog.appendLine("--fail--")
