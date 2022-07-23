@@ -1,6 +1,6 @@
 import java.io.File
 
-class MajiangCaseReader(private val fileName: String) {
+class MajiangCaseReader(private val fileName: String, private val solution: IMajiangSolution) {
     private var cases: List<Case> = emptyList()
 
     fun read(): List<Case> {
@@ -14,10 +14,24 @@ class MajiangCaseReader(private val fileName: String) {
         cases.forEach { it.print() }
     }
 
+    fun test() {
+        println("case file: $fileName")
+        cases.forEach { it.test() }
+    }
+
+    fun testIndex(index: Int) {
+        cases.getOrNull(index)?.test()
+    }
+
     private fun convertCase(content: String): Case {
         val existCardsString = content.split(",")[0]
         val tingCardsString = content.split(",")[1]
-        return Case(convertCardGroup(existCardsString), convertCardGroup(tingCardsString).excludePowerCardGroup())
+        return Case(
+            content,
+            convertCardGroup(existCardsString),
+            convertCardGroup(tingCardsString).excludePowerCardGroup(),
+            solution
+        )
     }
 
     private fun convertCardGroup(content: String): MajiangCardGroup {
@@ -34,29 +48,9 @@ class MajiangCaseReader(private val fileName: String) {
         val cards4: List<MajiangCardItem> = numberStrings.getOrNull(3)?.toCharArray()?.map { it.toString().toInt() }
             ?.map { MajiangCardItem(word = MajiangWord.parse(it)) } ?: emptyList()
         val cards5: List<MajiangCardItem> = numberStrings.getOrNull(4)?.toCharArray()?.map { it.toString().toInt() }
-            ?.map { MajiangCardItem(power = PowerType.parse(it)) } ?: emptyList()
+            ?.map { MajiangCardItem(flower = MajiangFlower.parse(it)) } ?: emptyList()
         val cards = mutableListOf(cards1, cards2, cards3, cards4, cards5).flatten()
         return MajiangCardGroup(cards)
     }
 }
 
-data class Case(
-    val cardGroup: MajiangCardGroup,
-    val tingCardGroup: MajiangCardGroup
-) {
-    fun print() {
-        println("手牌：")
-        println(cardGroup.toString())
-        println("听牌：")
-        if (tingCardGroup.cardItems.isEmpty()) {
-            println("不听牌")
-        } else {
-            println(tingCardGroup.toString())
-        }
-        println()
-    }
-}
-
-interface IMajiangSolution {
-    fun execute()
-}
