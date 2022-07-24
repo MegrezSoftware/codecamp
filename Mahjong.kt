@@ -10,9 +10,9 @@ fun main() {
     require(judgeTingCards("123456-23444-55", "-14-5", omnipotentCards))
     require(judgeTingCards("1112378999-123--", "1469", omnipotentCards))
     require(judgeTingCards("2344445688999", "178", omnipotentCards))
-    require(judgeTingCards("223344-234-223-1", "--12345", omnipotentCards))
-    require(judgeTingCards("1234489-147-1234", "null", omnipotentCards))
-    require(judgeTingCards("123456789---1234", "all", omnipotentCards))
+    require(judgeTingCards("223344-334--222-1", "-23456", omnipotentCards))
+    require(judgeTingCards("1234489-147--1234", "null", omnipotentCards))
+    require(judgeTingCards("-123456789---1234", "all", omnipotentCards))
 }
 
 fun judgeTingCards(input: String, output: String, omnipotentCards: List<Mahjong>): Boolean {
@@ -44,7 +44,7 @@ fun whichCardToTing(handCards: List<Mahjong>, omnipotentCards: List<Mahjong>): L
     val remainCards = handCards.filter { it !in omnipotentCards }
     // 统计万能牌个数
     val omnipotentCount = handCards.count { it in omnipotentCards }
-    val counts = IntArray(31)
+    val counts = IntArray(40)
     remainCards.forEach {
         counts[it.value]++
     }
@@ -114,8 +114,11 @@ enum class Mahjong(val value: Int) {
     // 条1~9
     TIAO1(21), TIAO2(22), TIAO3(23), TIAO4(24), TIAO5(25), TIAO6(26), TIAO7(27), TIAO8(28), TIAO9(29),
 
+    // 字牌，东南西北中发白
+    EAST(31), SOUTH(32), WEST(33), NORTH(34), ZHONG(35), FA(36), BAI(37),
+
     // 花牌，春夏秋冬梅兰竹菊
-    SPRING(31), SUMMER(32), AUTUMN(33), WINTER(34), PLUM(35), ORCHID(36), BAMBOO(37), CHRYSANTHEMUM(38);
+    SPRING(41), SUMMER(42), AUTUMN(43), WINTER(44), PLUM(45), ORCHID(46), BAMBOO(47), CHRYSANTHEMUM(48);
 
     companion object {
         fun parse(value: Int): Mahjong? {
