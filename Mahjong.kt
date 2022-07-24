@@ -2,86 +2,59 @@
  * Created by muchuanxin on 2022-07-09
  */
 fun main() {
-    require(convertInputAndOutput("223344-234-2234") == "--25")
-    require(convertInputAndOutput("1112345678999") == "123456789")
-    require(convertInputAndOutput("23456-22233-789") == "147")
-    require(convertInputAndOutput("123456-23444-55") == "-14-5")
-    require(convertInputAndOutput("1112378999-123--") == "1469")
-    require(convertInputAndOutput("2344445688999") == "178")
-    require(convertInputAndOutput("223344-234-223-1") == "--12345")
-    require(convertInputAndOutput("1234489-147-1234") == "null")
-    require(convertInputAndOutput("123456789---1234") == "all")
+    val omnipotentCards =
+        listOf(Mahjong.SPRING, Mahjong.SUMMER, Mahjong.AUTUMN, Mahjong.WINTER, Mahjong.PLUM, Mahjong.ORCHID, Mahjong.BAMBOO, Mahjong.CHRYSANTHEMUM)
+    require(judgeTingCards("223344-234-2234", "--25", omnipotentCards))
+    require(judgeTingCards("1112345678999", "123456789", omnipotentCards))
+    require(judgeTingCards("23456-22233-789", "147", omnipotentCards))
+    require(judgeTingCards("123456-23444-55", "-14-5", omnipotentCards))
+    require(judgeTingCards("1112378999-123--", "1469", omnipotentCards))
+    require(judgeTingCards("2344445688999", "178", omnipotentCards))
+    require(judgeTingCards("223344-234-223-1", "--12345", omnipotentCards))
+    require(judgeTingCards("1234489-147-1234", "null", omnipotentCards))
+    require(judgeTingCards("123456789---1234", "all", omnipotentCards))
 }
 
-fun convertInputAndOutput(input: String): String {
-    val convertInput = mutableListOf<Mahjong>()
+fun judgeTingCards(input: String, output: String, omnipotentCards: List<Mahjong>): Boolean {
+    val realInput = convertStringToMahjongList(input, omnipotentCards)
+    return whichCardToTing(realInput, omnipotentCards) == convertStringToMahjongList(output, omnipotentCards)
+}
+
+private fun convertStringToMahjongList(input: String, omnipotentCards: List<Mahjong>): List<Mahjong> {
+    if (input == "null") return emptyList()
+    if (input == "all") return Mahjong.values().filter { it !in omnipotentCards }
+    val result = mutableListOf<Mahjong>()
     input.split("-").forEachIndexed { index, s ->
         s.forEach { c ->
             Mahjong.parse(index * 10 + c.digitToInt())?.also {
-                convertInput.add(it)
+                result.add(it)
             } ?: throw IllegalArgumentException()
         }
     }
-    val tingCards = whichCardToTing(convertInput)
-    val wan = StringBuilder()
-    val tong = StringBuilder()
-    val tiao = StringBuilder()
-    tingCards.forEach {
-        when {
-            it.value < 10 -> wan.append(it.value)
-            it.value < 20 -> tong.append(it.value - 10)
-            else -> tiao.append(it.value - 20)
-        }
-    }
-    if (tong.isNotEmpty() || tiao.isNotEmpty()) {
-        wan.append("-").append(tong)
-    }
-    if (tiao.isNotEmpty()) {
-        wan.append("-").append(tiao)
-    }
-    if (wan.isEmpty()) {
-        wan.append("null")
-    }
-    if (wan.length == 29) {
-        wan.clear().append("all")
-    }
-    return wan.toString()
+    return result
 }
 
 /**
  * @return 返回听的牌，empty表示没有听牌
  */
-fun whichCardToTing(handCards: List<Mahjong>): List<Mahjong> {
+fun whichCardToTing(handCards: List<Mahjong>, omnipotentCards: List<Mahjong>): List<Mahjong> {
     if (handCards.size != 13)
         return emptyList()
     // 过滤万能牌
-    val remainCards = handCards.filter { it.isOmnipotentCard().not() }
+    val remainCards = handCards.filter { it !in omnipotentCards }
     // 统计万能牌个数
-    val omnipotentCount = handCards.count { it.isOmnipotentCard() }
+    val omnipotentCount = handCards.count { it in omnipotentCards }
     val counts = IntArray(31)
     remainCards.forEach {
         counts[it.value]++
     }
     val results = mutableListOf<Mahjong>()
-    outer@
-    for (tingCard in Mahjong.values().filter { it.isOmnipotentCard().not() }) {
+    for (tingCard in Mahjong.values().filter { it !in omnipotentCards }) {
         if (worthNotToTing(counts, tingCard.value, omnipotentCount))
             continue
         val tingCounts = counts.copyOf().apply { this[tingCard.value]++ }
-        for (index in tingCounts.indices) {
-            // 扣除单个对子
-            var reduceCount: Int
-            if (tingCounts[index] + omnipotentCount >= 2) {
-                val cards = tingCounts.copyOf().apply {
-                    // 如果个数不够2，用万能牌凑数
-                    reduceCount = (2 - this[index]).coerceAtLeast(0)
-                    this[index] = (this[index] - 2).coerceAtLeast(0)
-                }
-                if (judgeRemainAllKeAndShun(cards, omnipotentCount - reduceCount)) {
-                    results.add(tingCard)
-                    continue@outer
-                }
-            }
+        if (judgeHu(tingCounts, 4, 1, omnipotentCount)) {
+            results.add(tingCard)
         }
     }
     return results
@@ -95,36 +68,40 @@ fun worthNotToTing(counts: IntArray, tingCard: Int, omnipotentCount: Int): Boole
     return counts[tingCard] + counts[tingCard - 1] + counts[tingCard + 1] + omnipotentCount == 0 || counts[tingCard] == 4
 }
 
-/**
- * 判断剩余牌是否全是刻和顺
- */
-fun judgeRemainAllKeAndShun(counts: IntArray, omnipotentCount: Int): Boolean {
-    var remainOmnipotent = omnipotentCount
-    for (index in 0..counts.lastIndex - 2) {
-        if (counts[index] <= 0) continue
-        when (counts[index]) {
-            2 -> {
-                if ((counts[index + 1] - 2).coerceAtMost(0) + (counts[index + 2] - 2).coerceAtMost(0) < -1 && remainOmnipotent >= 1) {
-                    remainOmnipotent--
-                } else if ((counts[index + 1] - 2).coerceAtMost(0) + (counts[index + 2] - 2).coerceAtMost(0) + remainOmnipotent < 0) {
-                    return false
-                } else {
-                    counts[index + 1] -= 2
-                    counts[index + 2] -= 2
-                    remainOmnipotent += ((counts[index + 1].coerceAtMost(0)) + (counts[index + 2].coerceAtMost(0)))
+fun judgeHu(counts: IntArray, remainShunKeCount: Int, remainDuiCount: Int, omnipotentCount: Int): Boolean {
+    if ((remainShunKeCount == 0 && remainDuiCount == 0 && counts.sum() == 0 && omnipotentCount == 0) || (counts.sum() == 0 && omnipotentCount == 3 * remainShunKeCount + 2 * remainDuiCount)) return true
+    var ke = false
+    var shun = false
+    var dui = false
+    if (remainShunKeCount > 0) {
+        val keIndex = counts.indexOfFirst { it > 0 && it + omnipotentCount >= 3 }
+        if (keIndex != -1) {
+            val consume = (3 - counts[keIndex]).coerceAtLeast(0)
+            val newCounts = counts.copyOf().apply { this[keIndex] -= (3 - consume) }
+            ke = judgeHu(newCounts, remainShunKeCount - 1, remainDuiCount, omnipotentCount - consume)
+        }
+        for (index in (IntRange(1, 7) + IntRange(11, 17) + IntRange(21, 27))) {
+            val consume = (1 - counts[index]).coerceAtLeast(0) + (1 - counts[index + 1]).coerceAtLeast(0) + (1 - counts[index + 2]).coerceAtLeast(0)
+            if (counts[index] > 0 && omnipotentCount - consume >= 0) {
+                val newCounts = counts.copyOf().apply {
+                    this[index] = (this[index] - 1).coerceAtLeast(0)
+                    this[index + 1] = (this[index + 1] - 1).coerceAtLeast(0)
+                    this[index + 2] = (this[index + 2] - 1).coerceAtLeast(0)
                 }
-            }
-            1, 4 -> {
-                if ((counts[index + 1] - 1).coerceAtMost(0) + (counts[index + 2] - 1).coerceAtMost(0) + remainOmnipotent < 0) {
-                    return false
-                }
-                counts[index + 1] -= 1
-                counts[index + 2] -= 1
-                remainOmnipotent += ((counts[index + 1].coerceAtMost(0)) + (counts[index + 2].coerceAtMost(0)))
+                shun = judgeHu(newCounts, remainShunKeCount - 1, remainDuiCount, omnipotentCount - consume)
+                break
             }
         }
     }
-    return (counts[29] + remainOmnipotent) % 3 == 0
+    if (remainDuiCount > 0) {
+        val duiIndex = counts.indexOfFirst { it > 0 && it + omnipotentCount >= 2 }
+        if (duiIndex != -1) {
+            val consume = (2 - counts[duiIndex]).coerceAtLeast(0)
+            val newCounts = counts.copyOf().apply { this[duiIndex] -= (2 - consume) }
+            dui = judgeHu(newCounts, remainShunKeCount, remainDuiCount - 1, omnipotentCount - consume)
+        }
+    }
+    return ke || shun || dui
 }
 
 enum class Mahjong(val value: Int) {
@@ -137,12 +114,8 @@ enum class Mahjong(val value: Int) {
     // 条1~9
     TIAO1(21), TIAO2(22), TIAO3(23), TIAO4(24), TIAO5(25), TIAO6(26), TIAO7(27), TIAO8(28), TIAO9(29),
 
-    // 万能牌，春夏秋冬梅兰竹菊
+    // 花牌，春夏秋冬梅兰竹菊
     SPRING(31), SUMMER(32), AUTUMN(33), WINTER(34), PLUM(35), ORCHID(36), BAMBOO(37), CHRYSANTHEMUM(38);
-
-    fun isOmnipotentCard(): Boolean {
-        return this in listOf(SPRING, SUMMER, AUTUMN, WINTER, PLUM, ORCHID, BAMBOO, CHRYSANTHEMUM)
-    }
 
     companion object {
         fun parse(value: Int): Mahjong? {
