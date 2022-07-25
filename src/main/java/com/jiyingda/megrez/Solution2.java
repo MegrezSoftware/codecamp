@@ -24,7 +24,7 @@ public class Solution2 {
     static int[] allCards = new int[]{1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29};
 
     public static void main(String[] args) {
-        int[] cards = new int[]{3,3,5,5,5,6,6,6,12,13,14,15,0};
+        int[] cards = new int[]{1,2,9,11,16,29,0,0,0,0,0,0,0};
         List<Integer> tp = check13(cards);
         for (int b : tp) {
             System.out.print(b + "\t");
@@ -113,31 +113,8 @@ public class Solution2 {
                 return true;
             }
         }
-        // 后面的牌不够连顺 1：当前的牌为一张单排 考虑用万能牌凑对或者连三
-        if ((i + 1 >= len) || (i + 1 == len && pai[i + 1] < 1) || (i + 2 < len && pai[i + 1] < 1 && pai[i + 2] < 1)) {
-            // 凑「刻」
-            pai[0] -= 2;
-            pai[i] -= 1;
-            boolean f1 = dfs(pai, i + 1, c3 - 1, c2);
-            pai[0] += 2;
-            pai[i] += 1;
-            if (f1) {
-                return true;
-            }
-        } else if ((i + 2 < len && pai[i + 2] < 1) || (i + 1 == len && pai[i + 1] > 0)) {
+        if ((i + 2 < len && pai[i + 2] < 1) || (i + 1 == len - 1 && pai[i + 1] > 0)) {
             // 后面第二张牌不够连顺
-            pai[0] -= 1;
-            pai[i] -= 1;
-            pai[i + 2] -= 1;
-            boolean f1 = dfs(pai, i + 1, c3 - 1, c2);
-            pai[0] += 1;
-            pai[i] += 1;
-            pai[i + 2] += 1;
-            if (f1) {
-                return true;
-            }
-        } else if (i + 2 < len && pai[i + 2] > 0 && pai[i + 1] < 1) {
-            // 后面第一张牌不够连顺
             pai[0] -= 1;
             pai[i] -= 1;
             pai[i + 1] -= 1;
@@ -148,14 +125,35 @@ public class Solution2 {
             if (f1) {
                 return true;
             }
+        } else if (i + 2 < len && pai[i + 2] > 0 && pai[i + 1] < 1 && i + 1 != 10 && i + 1 != 20) {
+            // 后面第一张牌不够连顺
+            pai[0] -= 1;
+            pai[i] -= 1;
+            pai[i + 2] -= 1;
+            boolean f1 = dfs(pai, i + 1, c3 - 1, c2);
+            pai[0] += 1;
+            pai[i] += 1;
+            pai[i + 2] += 1;
+            if (f1) {
+                return true;
+            }
+        }
+        // 凑「刻」
+        pai[0] -= 2;
+        pai[i] -= 1;
+        boolean f1 = dfs(pai, i + 1, c3 - 1, c2);
+        pai[0] += 2;
+        pai[i] += 1;
+        if (f1) {
+            return true;
         }
         // 再考虑凑对
         pai[0] -= 1;
         pai[i] -= 1;
-        boolean f1 = dfs(pai, i + 1, c3, c2 - 1);
+        boolean f2 = dfs(pai, i + 1, c3, c2 - 1);
         pai[0] += 1;
         pai[i] += 1;
-        return f1;
+        return f2;
     }
 
     public static boolean check2(int[] pai, int i, int c3, int c2, int len) {
