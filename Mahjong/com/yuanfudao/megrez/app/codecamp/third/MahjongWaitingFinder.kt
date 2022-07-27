@@ -50,17 +50,6 @@ object MahjongWaitingFinder {
         cards.forEach { card ->
             remain[card]++
         }
-//        for (other in allCards) {
-//            if (remain[other] >= 0 && remain[other] < 4) {
-//                remain[other]++
-//                val complete14Card = check14(remain, arbitraryCount)
-//                remain[other]--
-//                if (complete14Card) {
-//                    // 保存所有可能听的牌
-//                    waitingCard.add(other)
-//                }
-//            }
-//        }
         stuffOnePossibleCard(allCards, 0, arbitraryCount, waitingCard, remain)
         return waitingCard
     }
@@ -218,99 +207,5 @@ object MahjongWaitingFinder {
             if (threeSequence) return true
         }
         return false
-    }
-
-    /**
-     * @param arbitraryCount 总共任意牌的个数
-     * @param remain 手牌按桶计数列表
-     * @param cardTaken 当前需要决定分支的牌在下标。万筒条下标不会重复，分别在三个区间
-     * @param threeCount 还需要满足的三个（顺或刻）的个数
-     * @param threeCount 还需要满足的对儿个数
-     * */
-    private fun judgeByThisCardRemain(
-        arbitraryCount: Int,
-        remain: IntArray,
-        cardTaken: Int,
-        threeCount: Int,
-        twoCount: Int,
-    ): Boolean {
-        val thisCardRemain = remain[cardTaken]
-        if (thisCardRemain < 0) {
-            return false
-        }
-        val i = cardTaken
-        val len = remain.size
-        when (thisCardRemain) {
-            1 -> {
-                // 赊账自己，凑成一对拿走
-                remain[i] = remain[i] - 2
-                val twins =
-                    searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount, twoCount - 1)
-                remain[i] = remain[i] + 2
-                if (twins) {
-                    return true
-                }
-                // 赊账2张连续的牌，拿一个顺
-                if (i + 2 < len) {
-                    remain[i]--
-                    remain[i + 1]--
-                    remain[i + 2]--
-                    val threeSequence =
-                        searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount - 1, twoCount)
-                    remain[i]++
-                    remain[i + 1]++
-                    remain[i + 2]++
-                    if (threeSequence) return true
-                }
-                return false
-            }
-            2 -> {
-                // 赊账拿走一个刻。虽然目前只有一对，但是尝试赊账一张任意牌成为顺
-                remain[i] = remain[i] - 3
-                val triple =
-                    searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount - 1, twoCount)
-                remain[i] = remain[i] + 3
-                if (triple) {
-                    return true
-                }
-                // 拿走一对
-                remain[i] = remain[i] - 2
-                val twins =
-                    searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount, twoCount - 1)
-                remain[i] = remain[i] + 2
-                if (twins) {
-                    return true
-                }
-                // 拿走两个顺
-                if (i + 2 >= len) {
-                    return false
-                }
-                remain[i] = remain[i] - 2
-                remain[i + 1] = remain[i + 1] - 2
-                remain[i + 2] = remain[i + 2] - 2
-                val doubleThreeSequence =
-                    searchBaseOnDepth(arbitraryCount, remain, i + 1, threeCount - 2, twoCount)
-                remain[i] = remain[i] + 2
-                remain[i + 1] = remain[i + 1] + 2
-                remain[i + 2] = remain[i + 2] + 2
-                return doubleThreeSequence
-            }
-            else -> {
-                // 拿走一个刻，可能多余3张，所以下标i不挪
-                remain[i] = remain[i] - 3
-                val triple = searchBaseOnDepth(arbitraryCount, remain, i, threeCount - 1, twoCount)
-                remain[i] = remain[i] + 3
-                if (triple) {
-                    return true
-                }
-                // 拿走一对
-                // 不可能再出现3条顺的情况 因为等价于3个刻
-                remain[i] = remain[i] - 2
-                // i不用加1
-                val twins = searchBaseOnDepth(arbitraryCount, remain, i, threeCount, twoCount - 1)
-                remain[i] = remain[i] + 2
-                return twins
-            }
-        }
     }
 }
