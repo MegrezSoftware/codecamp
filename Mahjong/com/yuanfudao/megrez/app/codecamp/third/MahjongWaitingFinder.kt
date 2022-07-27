@@ -50,20 +50,52 @@ object MahjongWaitingFinder {
         cards.forEach { card ->
             remain[card]++
         }
-        for (other in allCards) {
-            if (remain[other] >= 0 && remain[other] < 4) {
-                remain[other]++
-                val complete14Card = check14(remain, arbitraryCount)
-                remain[other]--
-                if (complete14Card) {
-                    // 保存所有可能听的牌
-                    waitingCard.add(other)
-                }
-            }
-        }
+//        for (other in allCards) {
+//            if (remain[other] >= 0 && remain[other] < 4) {
+//                remain[other]++
+//                val complete14Card = check14(remain, arbitraryCount)
+//                remain[other]--
+//                if (complete14Card) {
+//                    // 保存所有可能听的牌
+//                    waitingCard.add(other)
+//                }
+//            }
+//        }
+        stuffOnePossibleCard(allCards, 0, arbitraryCount, waitingCard, remain)
         return waitingCard
     }
 
+    private fun stuffOnePossibleCard(
+        allCards: List<Int>,
+        depth: Int,
+        arbitraryCount: Int,
+        waitingCard: MutableList<Int>,
+        remain: IntArray,
+    ) {
+        if (depth >= allCards.size) {
+            return
+        }
+        val cardTaken = allCards[depth]
+        if (remain[cardTaken] < 0 || remain[cardTaken] >= 4) {
+            return
+        }
+        val complete14Card = check14(
+            inputList = remain.copyOf().also { copy ->
+                copy[cardTaken]++
+            }, arbitraryCount = arbitraryCount
+        )
+        if (complete14Card) {
+            // 保存所有可能听的牌
+            waitingCard.add(cardTaken)
+        }
+        stuffOnePossibleCard(
+            allCards = allCards,
+            depth = depth + 1,
+            arbitraryCount = arbitraryCount,
+            waitingCard = waitingCard,
+            remain = remain,
+        )
+    }
 
     /**
      * 判断是否胡牌
