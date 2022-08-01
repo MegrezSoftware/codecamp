@@ -1,9 +1,8 @@
 package com.practice.majiang
 
+import com.practice.majiang.game.IDealer
+
 interface IGame {
-
-    val players:Array<IPlayer>
-
-    fun start()
+    fun start(dealer: IDealer)
 
 }

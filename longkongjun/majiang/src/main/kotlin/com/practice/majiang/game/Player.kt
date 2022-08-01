@@ -20,6 +20,10 @@ class Player : IPlayer {
         TODO("Not yet implemented")
     }
 
+    override fun checkPeng(target: MaJiang): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun checkChi(target: MaJiang): Boolean {
         TODO("Not yet implemented")
     }

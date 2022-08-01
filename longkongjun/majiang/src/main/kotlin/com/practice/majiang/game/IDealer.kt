@@ -17,4 +17,8 @@ interface IDealer {
      */
     fun pickMaJiang():MaJiang
 
+    /**
+     * 是否还有剩余的牌
+     */
+    fun pickOut():Boolean
 }

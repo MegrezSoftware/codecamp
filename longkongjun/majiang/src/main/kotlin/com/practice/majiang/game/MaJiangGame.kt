@@ -2,59 +2,50 @@ package com.practice.majiang.game
 
 import com.practice.majiang.IGame
 import com.practice.majiang.IPlayer
-import com.practice.majiang.PlayerNode
+import com.practice.majiang.data.MaJiang
 
-class MaJiangGame(private val dealer: IDealer) : IGame {
+class MaJiangGame(
+    private val players: List<IPlayer>,
+) : IGame {
 
-    override val players: Array<IPlayer>
-
-    init {
-        val player1 = Player()
-        val player2 = Player()
-        val player3 = Player()
-        val player4 = Player()
-
-        players = arrayOf(
-            PlayerNode(player = player1, next = player2),
-            PlayerNode(player = player2, next = player3),
-            PlayerNode(player = player3, next = player4),
-            PlayerNode(player = player4, next = player1)
-        )
-    }
-
-
-    override fun start() {
-
+    override fun start(dealer: IDealer) {
         players.forEach {
             it.input(dealer.dealerMaJiang())
         }
-        playerTerm(player = players[0])
+        var round = nextRound(host = players.random(), dealer = dealer)
+        while (!dealer.pickOut()) {
+            round = when (val roundResult = round.starRound()) {
+                is RoundComplete -> {
+                    nextRound(host = roundResult.nextHost, dealer = dealer)
+                }
 
-    }
+                is RoundContinue -> {
+                    nextRound(host = roundResult.nextHost, input = roundResult.discard)
+                }
 
-    private fun playerTerm(player: IPlayer) {
-
-        if (player.checkHu(dealer.pickMaJiang())) {
-            gameOver(winner = listOf(player))
-        } else {
-            val discard = player.discard()
-
-            val otherPlayers = players.toMutableList().apply { remove(player) }.toList()
-            val huPlayers = otherPlayers.filter {
-                it.checkHu(discard)
+                is RoundOver -> {
+                    gameOver(roundResult.winner)
+                    return
+                }
             }
-            if (huPlayers.isNotEmpty()) {
-                gameOver(huPlayers)
-                return
-            }
-            val pengPlayer = huPlayers.find { it.checkHu(discard) }
-            pengPlayer?.pick(discard)
-
         }
-
+        gameOverWithNoWinner()
     }
+
+    private fun nextRound(host: IPlayer, dealer: IDealer): Round {
+        return Round(host = host, players = players.toList(), input = dealer.pickMaJiang())
+    }
+
+    private fun nextRound(host: IPlayer, input: MaJiang): Round {
+        return Round(host = host, players = players.toList(), input = input)
+    }
+
 
     private fun gameOver(winner: List<IPlayer>) {
+
+    }
+
+    private fun gameOverWithNoWinner() {
 
     }
 
