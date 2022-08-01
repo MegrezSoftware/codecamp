@@ -10,7 +10,7 @@ interface IDealer {
     /**
      * 发牌
      */
-    fun dealerMaJiang()
+    fun dealerMaJiang():List<MaJiang>
 
     /**
      * 摸一张牌
