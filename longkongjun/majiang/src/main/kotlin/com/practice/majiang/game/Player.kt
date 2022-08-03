@@ -1,15 +1,20 @@
 package com.practice.majiang.game
 
 import com.practice.majiang.IPlayer
+import com.practice.majiang.IRuleStrategy
 import com.practice.majiang.data.MaJiang
+import com.practice.majiang.rule.ChuanRuleStrategy
 
-class Player : IPlayer {
+class Player(private val ruleStrategy: IRuleStrategy) : IPlayer {
+
+    private val mMaJiang = mutableListOf<MaJiang>()
+
     override fun input(majiangs: List<MaJiang>) {
-        TODO("Not yet implemented")
+        mMaJiang.addAll(majiangs)
     }
 
     override fun pick(majiang: MaJiang) {
-        TODO("Not yet implemented")
+        mMaJiang.add(majiang)
     }
 
     override fun discard(): MaJiang {
@@ -17,14 +22,14 @@ class Player : IPlayer {
     }
 
     override fun checkHu(target: MaJiang): Boolean {
-        TODO("Not yet implemented")
+        return ruleStrategy.checkHu(mMaJiang, target = target)
     }
 
     override fun checkPeng(target: MaJiang): Boolean {
-        TODO("Not yet implemented")
+        return ruleStrategy.checkPeng(mMaJiang, target = target)
     }
 
     override fun checkChi(target: MaJiang): Boolean {
-        TODO("Not yet implemented")
+        return ruleStrategy.checkChi(mMaJiang, target = target)
     }
 }

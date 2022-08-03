@@ -1,4 +1,4 @@
-package com.practice.majiang.game
+package com.practice.majiang
 
 import com.practice.majiang.data.MaJiang
 

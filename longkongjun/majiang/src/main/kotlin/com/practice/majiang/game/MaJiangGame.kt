@@ -1,5 +1,6 @@
 package com.practice.majiang.game
 
+import com.practice.majiang.IDealer
 import com.practice.majiang.IGame
 import com.practice.majiang.IPlayer
 import com.practice.majiang.data.MaJiang
