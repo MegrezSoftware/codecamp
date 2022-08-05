@@ -1,5 +1,22 @@
+## 思路
+
+- 初始化牌桌
+  - 确定规则
+  - 确定牌表
+  - 初始化牌池
+  - 初始化弃牌队列
+- 初始化玩家
+  - 初始化玩家实例
+- 初始化牌局
+  - 重置牌池
+  - 重置弃牌队列
+  - 确定随机宝牌
+
+## 伪代码
+
+### 枚举牌色
+
 ```
-/** 枚举花色 */
 enum Color = [
     WAN,
     TONG,
@@ -7,7 +24,11 @@ enum Color = [
     ZI,
     HUA
 ]
+```
 
+### 枚举牌值
+
+```
 /** 枚举花色 */
 enum Value = [
     ONE,
@@ -20,8 +41,11 @@ enum Value = [
     EIGHT,
     NINE
 ]
+```
 
-/** 牌表 */
+### 牌表配置
+
+```
 INITIAL_CONFIG = {
     WAN {
         ONE * 4
@@ -80,8 +104,11 @@ INITIAL_CONFIG = {
         SEVEN(JU) * 1
     }
 }
+```
 
-/** 牌 */
+### 牌的数据结构
+
+```
 Card {
     /** 花色 */
     color: Color
@@ -95,8 +122,11 @@ Card {
     /** 是否是万能牌 */
     is_super: Boolean
 }
+```
 
-/** 牌池 */
+### 牌池队列
+
+```
 Pool {
     /** 牌池初值 */
     initial_queue = Card[]
@@ -107,8 +137,11 @@ Pool {
     /** 洗牌 */
     suffle = (pool: Pool) => void
 }
+```
 
-/** 弃牌队列 */
+### 弃牌队列
+
+```
 Fold {
     /** 弃牌初值 */
     initial_queue = []
@@ -119,8 +152,11 @@ Fold {
     /** 重置 */
     reset = () => void
 }
+```
 
-/** 手牌表 */
+### 手牌表
+
+```
 Hand {
     /** 手牌初值 */
     initial_list = []
@@ -128,17 +164,26 @@ Hand {
     /** 手牌表 */
     list: Card[]
 }
+```
 
-/** 玩家 */
+### 玩家
+
+```
 Player {
     /** 手牌表 */
     hand: Hand
 
-    /** 下一个玩家 */
+    /** 下家 */
     next_player: Player
-}
 
-// 规则
+    /** 重置手牌表 */
+    reset = () => void
+}
+```
+
+### 规则
+
+```
 Rule {
     /** 初始化手牌 */
     static init_hand = (pool: Pool) => Card[]
@@ -167,58 +212,113 @@ Rule {
     /** 胡牌 */
     static check_win = (hand: Hand) => Boolean
 }
+```
 
-function padding (pool, fold, player) {
+### 等待轮询
+
+```
+function padding (pool, fold, current_player, player) {
     try {
-        Rule.in_crash(player.hand)
-        then
-        Rule.in_eat(player.hand)
-        then
-        Rule.in_aluba(player.hand)
+        current_player === player
     }
     try_success {
-        if (Rule.check_win(player.hand)) {
-            return
-        } else {
-            Rule.out_fold(player.hand)
-            process(pool, fold, player.next)
+        return null
+    }
+    try_fail {
+        try {
+            Rule.in_crash(player.hand)
+            or
+            Rule.in_eat(player.hand)
+            or
+            Rule.in_aluba(player.hand)
+        }
+        try_success {
+            try {
+                Rule.check_win(player.hand)
+            }
+            try_success {
+                return player
+            }
+            try_fail {
+                // do nothing
+            }
+        }
+        try_fail {
+            return padding(pool, fold, current_player, player.next)
         }
     }
-    try_fail {
-        return
-    }
 }
+```
 
+### 上牌
+
+```
 function process (pool, fold, player) {
+    touch = Rule.in_touch(player.hand)
+
     try {
-        padding(pool, fold, player.next)
-        padding(pool, fold, player.next.next)
-        padding(pool, fold, player.next.next.next)
+        Rule.check_aluba(touch)
     }
     try_success {
-        return
-    }
-    try_fail {
-        Rule.in_touch(player.hand)
         process(pool, fold, player)
     }
+    try_fail {
+        try {
+            Rule.check_win(player.hand)
+        }
+        try_success {
+            return
+        }
+        try_fail {
+            Rule.out_fold(player.hand)
+            try {
+                new_player = padding(pool, fold, current_player, player)
+                not_null(new_player)
+            }
+            try_success {
+                process(pool, fold, new_player)
+            }
+            try_fail {
+                process(pool, fold, player.next)
+            }
+        }
+    }
 }
+```
 
-/** 初始化房间 */
-config = INITIAL_CONFIG
-pool = new Pool
-Rule.set_super()
-fold = new Fold
+### 初始化牌桌
 
-/** 初始化玩家 */
-player1 = new Player()
-player2 = new Player()
-player3 = new Player()
-player4 = new Player()
+```
+function init_table () {
+    config = INITIAL_CONFIG
+    pool = new Pool(config)
+    fold = new Fold
+    Rule.set_super()
+}
+```
 
-/** 开玩，此处循环 */
-fold.reset()
-pool.suffle()
-Rule.pick_gem(pool)
-process(pool, fold, player)
+### 初始化玩家
+
+```
+function init_player () {
+    player = new Player()
+}
+```
+
+### 初始化牌局
+
+```
+function init_game () {
+    fold.reset()
+    pool.suffle()
+    Rule.pick_gem(pool)
+    player.reset()
+}
+```
+
+### 开始游戏
+```
+function start_game () {
+    process(pool, fold, player)
+}
 ```
