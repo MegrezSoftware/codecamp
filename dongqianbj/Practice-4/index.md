@@ -10,7 +10,12 @@
 - 初始化牌局
   - 重置牌池
   - 重置弃牌队列
+  - 重置玩家手牌
   - 确定随机宝牌
+- 开始游戏
+
+
+
 
 ## 伪代码
 
@@ -149,6 +154,9 @@ Fold {
     /** 弃牌队列 */
     queue: Card[]
 
+    /** 队尾牌 */
+    tail = () => Card
+
     /** 重置 */
     reset = () => void
 }
@@ -237,10 +245,10 @@ function padding (pool, fold, current_player, player) {
                 Rule.check_win(player.hand)
             }
             try_success {
-                return player
+                return
             }
             try_fail {
-                // do nothing
+                return player
             }
         }
         try_fail {
@@ -253,8 +261,12 @@ function padding (pool, fold, current_player, player) {
 ### 上牌
 
 ```
-function process (pool, fold, player) {
-    touch = Rule.in_touch(player.hand)
+function process (pool, fold, player, need_touch) {
+    if (need_touch) {
+        touch = Rule.in_touch(player.hand)
+    } else {
+        touch = fold.tail()
+    }
 
     try {
         Rule.check_aluba(touch)
@@ -271,15 +283,23 @@ function process (pool, fold, player) {
         }
         try_fail {
             Rule.out_fold(player.hand)
+            new_player = padding(pool, fold, current_player, player)
             try {
-                new_player = padding(pool, fold, current_player, player)
-                not_null(new_player)
+                is_undefined(new_player)
             }
             try_success {
-                process(pool, fold, new_player)
+                return
             }
             try_fail {
-                process(pool, fold, player.next)
+                try {
+                    not_null(new_player)
+                }
+                try_success {
+                    process(pool, fold, new_player, false)
+                }
+                try_fail {
+                    process(pool, fold, player.next, true)
+                }
             }
         }
     }
@@ -319,6 +339,6 @@ function init_game () {
 ### 开始游戏
 ```
 function start_game () {
-    process(pool, fold, player)
+    process(pool, fold, player, true)
 }
 ```
