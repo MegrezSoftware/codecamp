@@ -2,7 +2,7 @@ package mahjonggame
 
 /**
  * Created by muchuanxin on 2022-07-31
- *
+ * 基础麻将游戏类
  */
 class BaseMahjongGame : IMahjongGame {
     override fun getSupportCard(): Map<MahjongType, Int> {

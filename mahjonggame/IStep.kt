@@ -2,7 +2,9 @@ package mahjonggame
 
 /**
  * Created by muchuanxin on 2022-07-31
- *
+ */
+/**
+ * 步骤
  */
 interface IStep<I, O> {
     fun operate(input: I): O

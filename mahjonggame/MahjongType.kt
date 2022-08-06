@@ -2,7 +2,9 @@ package mahjonggame
 
 /**
  * Created by muchuanxin on 2022-07-31
- *
+ */
+/**
+ * 麻将类型
  */
 enum class MahjongType(val value: Int) {
     // 万1~9
@@ -39,6 +41,9 @@ enum class MahjongType(val value: Int) {
     }
 }
 
+/**
+ * 麻将实体
+ */
 data class Mahjong(
     val id: Int, // 一副牌中每一张牌都有唯一标识，用于区别4张一万
     val type: MahjongType,

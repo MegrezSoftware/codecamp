@@ -2,7 +2,7 @@ package mahjonggame
 
 /**
  * Created by muchuanxin on 2022-07-31
- *
+ * 日麻游戏
  */
 class JapanMahjongGame : IMahjongGame {
 
