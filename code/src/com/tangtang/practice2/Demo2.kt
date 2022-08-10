@@ -1,10 +1,6 @@
 package com.tangtang.practice2
 
-import com.tangtang.practice1.Bamboo
-import com.tangtang.practice1.Circle
-import com.tangtang.practice1.HandTile
-import com.tangtang.practice1.Mahjong
-import com.tangtang.practice1.Character
+import com.tangtang.practice1.*
 import java.io.File
 
 fun main(args: Array<String>) {
@@ -12,7 +8,7 @@ fun main(args: Array<String>) {
     dataList.map { HandTileWithPower(it.handMahjongList) to it }.forEach(::info)
 }
 
-private fun info(pair: Pair<HandTile, TestCase2>) {
+private fun info(pair: Pair<HandTileWithPower, TestCase2>) {
     val (handTile, testCase) = pair
     val readies = handTile.checkReady()
     val isReady = (testCase.isAllWinning && readies.size == 27) || readies.isNotEmpty()
@@ -67,9 +63,9 @@ private fun parseMahjong(mahjongString: String): List<Mahjong> {
     val zero = '0'.code
     return mahjongString.split("-").flatMapIndexed { index, str ->
         when (index) {
-            0 -> str.map { Character(it.code - zero) }
-            1 -> str.map { Circle(it.code - zero) }
-            2 -> str.map { Bamboo(it.code - zero) }
+            0 -> str.map { Mahjong(MahjongPoint.parsePoint(it.code - zero), MahjongType.Character) }
+            1 -> str.map { Mahjong(MahjongPoint.parsePoint(it.code - zero), MahjongType.Circle) }
+            2 -> str.map { Mahjong(MahjongPoint.parsePoint(it.code - zero), MahjongType.Bamboo) }
             else -> emptyList()
         }
     }

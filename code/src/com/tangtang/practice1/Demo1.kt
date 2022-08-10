@@ -1,5 +1,6 @@
 package com.tangtang.practice1
 
+import com.tangtang.practice1.MahjongPoint.Companion.parsePoint
 import java.io.File
 
 fun main(args: Array<String>) {
@@ -33,9 +34,9 @@ private fun parseMahjong(mahjongString: String): List<Mahjong> {
     val zero = '0'.code
     return mahjongString.split("-").flatMapIndexed { index, str ->
         when (index) {
-            0 -> str.map { Character(it.code - zero) }
-            1 -> str.map { Circle(it.code - zero) }
-            else -> str.map { Bamboo(it.code - zero) }
+            0 -> str.map { Mahjong(parsePoint(it.code - zero), MahjongType.Character) }
+            1 -> str.map { Mahjong(parsePoint(it.code - zero), MahjongType.Circle) }
+            else -> str.map { Mahjong(parsePoint(it.code - zero), MahjongType.Bamboo) }
         }
     }
 }
