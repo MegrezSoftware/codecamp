@@ -28,6 +28,14 @@ data class RoundOutput(
  */
 class Round(private val roundSteps: List<IRoundStep<*, *>>) : ILoopStep<RoundInput, RoundOutput> {
     override fun operate(input: RoundInput): RoundOutput {
+        var result = roundInnerOperate()
+        while (!isOver(result)) {
+            result = roundInnerOperate()
+        }
+        return result
+    }
+
+    private fun roundInnerOperate(): RoundOutput {
         roundSteps.forEach {
             it.operate(TODO())
         }
