@@ -1,8 +1,8 @@
 /**
  * @(#)MahjongMain.java, 7月 29, 2022.
  * <p>
- * Copyright 2022 yuanfudao.com. All rights reserved.
- * FENBI.COM PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * Copyright 2022 .com. All rights reserved.
+ * .COM PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
 package com.jiyingda.megrez;
 
@@ -16,6 +16,7 @@ public class MahjongMain {
 
     public static void main(String[] args) {
         List<Mahjong> mahjongs = Mahjong.toMjs(Arrays.asList(3,3,4,4,4,5,5,5,6,12,13,13,13));
+        Mahjong.print(mahjongs);
         List<Mahjong> lessonCards = getAllListenCards(mahjongs);
         List<Mahjong> lessonCards2 = getAllListenCardsWithHua(mahjongs);
         Mahjong.print(lessonCards);
