@@ -18,16 +18,12 @@ fun main() {
 
     Practice5().printNodeList(Practice5().preorderLoopTraversal(testNode))
     println()
-    val resultList1 = mutableListOf<Node>()
-    Practice5().preorderRecursionTraversal(testNode, resultList1)
-    Practice5().printNodeList(resultList1)
+    Practice5().printNodeList(Practice5().preorderRecursionTraversal(testNode, emptyList()))
     println()
 
     Practice5().printNodeList(Practice5().levelTraversal(testNode))
     println()
-    val resultList = mutableListOf<Node>()
-    Practice5().levelRecursionTraversal(listOf(testNode), resultList)
-    Practice5().printNodeList(resultList)
+    Practice5().printNodeList(Practice5().levelRecursionTraversal(listOf(testNode), emptyList()))
 }
 
 class Practice5 {
@@ -50,41 +46,42 @@ class Practice5 {
     }
 
     //前序递归
-    fun preorderRecursionTraversal(node: Node, result: MutableList<Node>) {
-        result.add(node)
+    fun preorderRecursionTraversal(node: Node, cacheList: List<Node>): List<Node> {
+        var resultList: List<Node> = cacheList.toMutableList().apply {
+            add(node)
+        }
         if (node.left != null) {
-            preorderRecursionTraversal(node.left, result)
+            resultList = preorderRecursionTraversal(node.left, resultList)
         }
         if (node.right != null) {
-            preorderRecursionTraversal(node.right, result)
+            resultList = preorderRecursionTraversal(node.right, resultList)
         }
+        return resultList
     }
 
     //广度循环
     fun levelTraversal(node: Node): List<Node> {
         val result = mutableListOf<Node>()
-        var list = mutableListOf<Node>()
-        list.add(node)
-        while (list.isNotEmpty()) {
-            val nextLevel = mutableListOf<Node>()
-            list.forEach { current ->
-                result.add(current)
-                current.left?.let {
-                    nextLevel.add(it)
-                }
-                current.right?.let {
-                    nextLevel.add(it)
-                }
+        val queue = mutableListOf<Node>()
+        queue.add(node)
+        while (queue.isNotEmpty()) {
+            val lastNode = queue.removeLast()
+            result.add(lastNode)
+            if (lastNode.left != null) {
+                queue.add(0, lastNode.left)
             }
-            list = nextLevel
+            if (lastNode.right != null) {
+                queue.add(0, lastNode.right)
+            }
         }
         return result
     }
 
     //广度遍历递归
-    fun levelRecursionTraversal(nodes: List<Node>, result: MutableList<Node>) {
-        if (nodes.isEmpty()) return
-        result.addAll(nodes)
+    fun levelRecursionTraversal(nodes: List<Node>, cacheList: List<Node>): List<Node> {
+        if (nodes.isEmpty()) return cacheList
+        val resultList = cacheList.toMutableList()
+        resultList.addAll(nodes)
         val nextLevels = mutableListOf<Node>()
         nodes.forEach {
             it.left?.let { left->
@@ -94,7 +91,7 @@ class Practice5 {
                 nextLevels.add(right)
             }
         }
-        levelRecursionTraversal(nextLevels, result)
+        return levelRecursionTraversal(nextLevels, resultList)
     }
 
     fun printNodeList(nodes: List<Node>) {
