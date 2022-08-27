@@ -82,16 +82,10 @@ class Practice5 {
         if (nodes.isEmpty()) return cacheList
         val resultList = cacheList.toMutableList()
         resultList.addAll(nodes)
-        val nextLevels = mutableListOf<Node>()
-        nodes.forEach {
-            it.left?.let { left->
-                nextLevels.add(left)
-            }
-            it.right?.let { right->
-                nextLevels.add(right)
-            }
+        val nextLevels = nodes.flatMap {
+            listOf(it.left, it.right)
         }
-        return levelRecursionTraversal(nextLevels, resultList)
+        return levelRecursionTraversal(nextLevels.filterNotNull(), resultList)
     }
 
     fun printNodeList(nodes: List<Node>) {
